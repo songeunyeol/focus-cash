@@ -26,13 +26,13 @@ class TodayStatsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderSubtle, width: 1),
+        border: Border.all(color: AppTheme.of(context).borderSubtle, width: 1),
         gradient: LinearGradient(
           colors: [
             AppTheme.primaryColor.withValues(alpha: 0.08),
-            AppTheme.cardColor,
+            AppTheme.of(context).card,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -72,7 +72,7 @@ class TodayStatsCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 50,
-                color: AppTheme.borderSubtle,
+                color: AppTheme.of(context).borderSubtle,
               ),
               Expanded(
                 child: _StatItem(
@@ -85,7 +85,7 @@ class TodayStatsCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 50,
-                color: AppTheme.borderSubtle,
+                color: AppTheme.of(context).borderSubtle,
               ),
               Expanded(
                 child: _StatItem(
@@ -97,13 +97,13 @@ class TodayStatsCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Container(
             width: double.infinity,
             padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
+              color: AppTheme.of(context).bg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -111,7 +111,7 @@ class TodayStatsCard extends StatelessWidget {
               style: TextStyle(
                 color: focusMinutes >= 120
                     ? AppTheme.accentGreen
-                    : AppTheme.textSecondary,
+                    : AppTheme.of(context).textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -157,11 +157,11 @@ class _StatItem extends StatelessWidget {
             letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 3),
+        SizedBox(height: 3),
         Text(
           label,
-          style: const TextStyle(
-            color: AppTheme.textSecondary,
+          style: TextStyle(
+            color: AppTheme.of(context).textSecondary,
             fontSize: 11,
           ),
         ),

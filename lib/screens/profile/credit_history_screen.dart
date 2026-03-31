@@ -59,29 +59,29 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
               future: _future,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
                   return Center(
                     child: Text('내역을 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppTheme.textSecondary)),
+                        style: TextStyle(color: AppTheme.of(context).textSecondary)),
                   );
                 }
                 final transactions = snapshot.data ?? [];
                 if (transactions.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       '내역이 없습니다',
-                      style: TextStyle(color: AppTheme.textSecondary),
+                      style: TextStyle(color: AppTheme.of(context).textSecondary),
                     ),
                   );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.all(20),
                   itemCount: transactions.length,
-                  separatorBuilder: (_, __) => const Divider(
-                    color: AppTheme.cardColor,
+                  separatorBuilder: (_, __) => Divider(
+                    color: AppTheme.of(context).card,
                     height: 1,
                   ),
                   itemBuilder: (context, index) =>
@@ -101,15 +101,15 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '보유 크레딧',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 8),
           Row(
@@ -154,21 +154,21 @@ class _CreditHistoryScreenState extends State<CreditHistoryScreen> {
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   tx.description,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 14),
+                  style: TextStyle(
+                      color: AppTheme.of(context).textPrimary, fontSize: 14),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   _formatDate(tx.createdAt),
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                      color: AppTheme.of(context).textSecondary, fontSize: 12),
                 ),
               ],
             ),

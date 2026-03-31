@@ -1,7 +1,7 @@
 name: focus_cash
 description: "Focus Cash - Study Timer with Credit Rewards"
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.5.0

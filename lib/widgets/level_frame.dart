@@ -20,7 +20,7 @@ class LevelFrame extends StatelessWidget {
     final grade = AppConstants.frameGradeForLevel(level);
     if (grade == 0) return child; // 레벨 1~4: 프레임 없음
 
-    final frameInfo = _frameInfoForGrade(grade);
+    final frameInfo = _frameInfoForGrade(grade, context);
 
     return Container(
       width: size,
@@ -42,7 +42,7 @@ class LevelFrame extends StatelessWidget {
     );
   }
 
-  _FrameInfo _frameInfoForGrade(int grade) {
+  _FrameInfo _frameInfoForGrade(int grade, BuildContext context) {
     switch (grade) {
       case 1: // 청동 (lv 5~9)
         return _FrameInfo(
@@ -81,7 +81,7 @@ class LevelFrame extends StatelessWidget {
         );
       default:
         return _FrameInfo(
-          color: AppTheme.borderMid,
+          color: AppTheme.of(context).borderMid,
           glowColor: Colors.transparent,
           borderWidth: 1,
           glowRadius: 0,
@@ -116,7 +116,7 @@ class LevelBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final grade = AppConstants.frameGradeForLevel(level);
-    final color = _colorForGrade(grade);
+    final color = _colorForGrade(grade, context);
     final title = compact ? 'Lv.$level' : 'Lv.$level  ${AppConstants.titleForLevel(level)}';
 
     return Container(
@@ -140,14 +140,14 @@ class LevelBadge extends StatelessWidget {
     );
   }
 
-  Color _colorForGrade(int grade) {
+  Color _colorForGrade(int grade, BuildContext context) {
     switch (grade) {
       case 1: return const Color(0xFFB45309);
       case 2: return const Color(0xFF94A3B8);
       case 3: return AppTheme.rankGold;
       case 4: return AppTheme.primaryColor;
       case 5: return AppTheme.secondaryColor;
-      default: return AppTheme.textMuted;
+      default: return AppTheme.of(context).textMuted;
     }
   }
 }

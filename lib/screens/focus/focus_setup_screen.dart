@@ -115,15 +115,15 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
           children: [
             // ── 집중 시간 ──────────────────────────
             _buildSectionHeader(Icons.timer_outlined, '집중 시간', AppTheme.primaryColor),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // 시간 조절 UI
             Container(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               decoration: BoxDecoration(
-                color: AppTheme.cardColor,
+                color: AppTheme.of(context).card,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.borderSubtle),
+                border: Border.all(color: AppTheme.of(context).borderSubtle),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.08),
@@ -142,12 +142,12 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                     onDecrease: _hours > 0 ? () => _changeHours(-1) : null,
                     onTap: () => _showInputDialog(isHour: true),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(bottom: 22, left: 12, right: 12),
                     child: Text(
                       ':',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.of(context).textSecondary,
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                       ),
@@ -177,17 +177,17 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                 return GestureDetector(
                   onTap: () => _selectPreset(minutes),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       gradient: isSelected ? AppTheme.primaryGradient : null,
-                      color: isSelected ? null : AppTheme.surfaceColor,
+                      color: isSelected ? null : AppTheme.of(context).surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected
                             ? Colors.transparent
-                            : AppTheme.borderMid,
+                            : AppTheme.of(context).borderMid,
                       ),
                       boxShadow: isSelected
                           ? [
@@ -207,7 +207,7 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : AppTheme.textSecondary,
+                            : AppTheme.of(context).textSecondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -231,18 +231,18 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                   onTap: () => setState(
                       () => _selectedTag = isSelected ? '기타' : tag),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppTheme.accentGreen.withValues(alpha: 0.15)
-                          : AppTheme.surfaceColor,
+                          : AppTheme.of(context).surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected
                             ? AppTheme.accentGreen.withValues(alpha: 0.6)
-                            : AppTheme.borderMid,
+                            : AppTheme.of(context).borderMid,
                       ),
                     ),
                     child: Text(
@@ -250,7 +250,7 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                       style: TextStyle(
                         color: isSelected
                             ? AppTheme.accentGreen
-                            : AppTheme.textSecondary,
+                            : AppTheme.of(context).textSecondary,
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -283,15 +283,15 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
               color: AppTheme.secondaryColor,
             ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
 
             // ── 예상 크레딧 ────────────────────────
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppTheme.cardColor,
+                color: AppTheme.of(context).card,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderSubtle),
+                border: Border.all(color: AppTheme.of(context).borderSubtle),
               ),
               child: Column(
                 children: [
@@ -304,14 +304,14 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                           color: AppTheme.creditGold.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.monetization_on,
+                        child: Icon(Icons.monetization_on,
                             color: AppTheme.creditGold, size: 20),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: 10),
+                      Text(
                         '예상 크레딧',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.of(context).textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -326,11 +326,11 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                     isMain: true,
                     leadingIcon: Icons.play_circle_outline,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _buildCreditRow(
                     '그냥 시작 시',
                     '$expectedCreditsNoAd 크레딧',
-                    AppTheme.textMuted,
+                    AppTheme.of(context).textMuted,
                     isMain: false,
                   ),
                 ],
@@ -369,16 +369,16 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               height: 48,
               child: OutlinedButton(
                 onPressed: () => _startFocus(context, watchAd: false),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.textSecondary,
-                  side: const BorderSide(
-                      color: AppTheme.borderMid, width: 1),
+                  foregroundColor: AppTheme.of(context).textSecondary,
+                  side: BorderSide(
+                      color: AppTheme.of(context).borderMid, width: 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -404,13 +404,13 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Icon(icon, size: 17, color: color),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Text(
           title,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: AppTheme.of(context).textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.bold,
           ),
@@ -431,13 +431,13 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
             if (leadingIcon != null) ...[
               Icon(leadingIcon,
                   size: 14,
-                  color: isMain ? AppTheme.textSecondary : AppTheme.textMuted),
-              const SizedBox(width: 5),
+                  color: isMain ? AppTheme.of(context).textSecondary : AppTheme.of(context).textMuted),
+              SizedBox(width: 5),
             ],
             Text(
               label,
               style: TextStyle(
-                color: isMain ? AppTheme.textSecondary : AppTheme.textMuted,
+                color: isMain ? AppTheme.of(context).textSecondary : AppTheme.of(context).textMuted,
                 fontSize: isMain ? 14 : 13,
               ),
             ),
@@ -463,18 +463,18 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: AppTheme.of(context).card,
         title: Text(
           isHour ? '시간 입력 (0~$_maxHours)' : '분 입력 (0, 10, 20...50)',
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: AppTheme.of(context).textPrimary, fontSize: 16),
         ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           autofocus: true,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: AppTheme.of(context).textPrimary,
             fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
@@ -491,8 +491,8 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text('취소',
+                style: TextStyle(color: AppTheme.of(context).textSecondary)),
           ),
           TextButton(
             onPressed: () {
@@ -539,17 +539,17 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedMode = mode),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: 0.08)
-              : AppTheme.surfaceColor,
+              : AppTheme.of(context).surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
                 ? color.withValues(alpha: 0.5)
-                : AppTheme.borderSubtle,
+                : AppTheme.of(context).borderSubtle,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
@@ -573,7 +573,7 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
               ),
               child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,16 +581,16 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      color: isSelected ? color : AppTheme.textPrimary,
+                      color: isSelected ? color : AppTheme.of(context).textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3),
                   Text(
                     description,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
+                    style: TextStyle(
+                      color: AppTheme.of(context).textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -630,10 +630,10 @@ class _TimeUnit extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onIncrease,
-          icon: const Icon(Icons.keyboard_arrow_up_rounded),
+          icon: Icon(Icons.keyboard_arrow_up_rounded),
           color: onIncrease != null
               ? AppTheme.primaryColor
-              : AppTheme.textMuted,
+              : AppTheme.of(context).textMuted,
           iconSize: 32,
         ),
         GestureDetector(
@@ -642,16 +642,16 @@ class _TimeUnit extends StatelessWidget {
             width: 88,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: AppTheme.of(context).surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.borderMid),
+              border: Border.all(color: AppTheme.of(context).borderMid),
             ),
             child: Column(
               children: [
                 Text(
                   value.toString().padLeft(2, '0'),
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textPrimary,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                     fontFeatures: [FontFeature.tabularFigures()],
@@ -660,8 +660,8 @@ class _TimeUnit extends StatelessWidget {
                 ),
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppTheme.textMuted,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -671,10 +671,10 @@ class _TimeUnit extends StatelessWidget {
         ),
         IconButton(
           onPressed: onDecrease,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+          icon: Icon(Icons.keyboard_arrow_down_rounded),
           color: onDecrease != null
               ? AppTheme.primaryColor
-              : AppTheme.textMuted,
+              : AppTheme.of(context).textMuted,
           iconSize: 32,
         ),
       ],

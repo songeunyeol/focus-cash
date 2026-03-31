@@ -91,26 +91,26 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
                       ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 '서비스 이용을 위해 약관에 동의해주세요',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.of(context).textSecondary,
                     ),
               ),
 
-              const SizedBox(height: 36),
+              SizedBox(height: 36),
 
               // 전체 동의 카드
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: AppTheme.of(context).surface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: _allAgreed
                         ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                        : AppTheme.borderMid,
+                        : AppTheme.of(context).borderMid,
                     width: 1,
                   ),
                   boxShadow: _allAgreed
@@ -126,10 +126,10 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
                 child: CheckboxListTile(
                   value: _allAgreed,
                   onChanged: _toggleAll,
-                  title: const Text(
+                  title: Text(
                     '전체 동의',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.of(context).textPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -141,9 +141,9 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Divider(
-                color: AppTheme.borderSubtle,
+                color: AppTheme.of(context).borderSubtle,
                 height: 16,
               ),
 
@@ -211,8 +211,8 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
                       child: ElevatedButton(
                         onPressed: null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.surfaceColor,
-                          disabledBackgroundColor: AppTheme.surfaceColor,
+                          backgroundColor: AppTheme.of(context).surface,
+                          disabledBackgroundColor: AppTheme.of(context).surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -235,7 +235,7 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: AppTheme.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -251,7 +251,7 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: AppTheme.textSecondary,
+                color: AppTheme.of(context).textSecondary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -259,22 +259,22 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
                 controller: controller,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   content,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     fontSize: 14,
                     height: 1.6,
                   ),
@@ -321,7 +321,7 @@ class _TermsItem extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              color: value ? AppTheme.textPrimary : AppTheme.textSecondary,
+              color: value ? AppTheme.of(context).textPrimary : AppTheme.of(context).textSecondary,
               fontSize: 14,
             ),
           ),

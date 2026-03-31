@@ -90,9 +90,9 @@ class _StoreScreenState extends State<StoreScreen>
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
-      backgroundColor: AppTheme.storeBg,
+      backgroundColor: AppTheme.of(context).storeBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.storeBg,
+        backgroundColor: AppTheme.of(context).storeBg,
         title: ShaderMask(
           shaderCallback: (bounds) =>
               AppTheme.primaryGradient.createShader(bounds),
@@ -117,7 +117,7 @@ class _StoreScreenState extends State<StoreScreen>
           indicatorWeight: 3,
           indicatorSize: TabBarIndicatorSize.label,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textMuted,
+          unselectedLabelColor: AppTheme.of(context).textMuted,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 14,
@@ -286,7 +286,7 @@ class _StoreScreenState extends State<StoreScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: AppTheme.of(context).card,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
@@ -307,10 +307,10 @@ class _StoreScreenState extends State<StoreScreen>
                           fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(gifticonCode.storeItemName,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 13)),
+                  style: TextStyle(
+                      color: AppTheme.of(context).textSecondary, fontSize: 13)),
               const SizedBox(height: 20),
               if (gifticonCode.imageBase64.isNotEmpty)
                 ClipRRect(
@@ -323,13 +323,13 @@ class _StoreScreenState extends State<StoreScreen>
                   ),
                 ),
               if (gifticonCode.imageBase64.isNotEmpty)
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: AppTheme.of(context).surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                       color: AppTheme.primaryColor
@@ -337,15 +337,15 @@ class _StoreScreenState extends State<StoreScreen>
                 ),
                 child: Column(
                   children: [
-                    const Text('기프티콘 코드',
+                    Text('기프티콘 코드',
                         style: TextStyle(
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.of(context).textSecondary,
                             fontSize: 12)),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     SelectableText(
                       gifticonCode.code,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: AppTheme.of(context).textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
@@ -356,10 +356,10 @@ class _StoreScreenState extends State<StoreScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text('코드를 길게 눌러 복사하세요',
+              SizedBox(height: 8),
+              Text('코드를 길게 눌러 복사하세요',
                   style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 11)),
+                      color: AppTheme.of(context).textSecondary, fontSize: 11)),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -417,21 +417,21 @@ class _StoreScreenState extends State<StoreScreen>
                           horizontal: 16, vertical: 10),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: AppTheme.of(context).surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.refresh,
-                              size: 16, color: AppTheme.textSecondary),
-                          const SizedBox(width: 8),
+                          Icon(Icons.refresh,
+                              size: 16, color: AppTheme.of(context).textSecondary),
+                          SizedBox(width: 8),
                           Text(
                             '오늘 남은 횟수: $remaining/${config.dailySpinLimit}',
                             style: TextStyle(
                               color: remaining > 0
-                                  ? AppTheme.textPrimary
-                                  : AppTheme.textSecondary,
+                                  ? AppTheme.of(context).textPrimary
+                                  : AppTheme.of(context).textSecondary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -441,7 +441,7 @@ class _StoreScreenState extends State<StoreScreen>
                   },
                 ),
               _buildSlotMachine(config),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -449,7 +449,7 @@ class _StoreScreenState extends State<StoreScreen>
                   onPressed: _isSpinning ? null : () => _spinRoulette(config),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isSpinning
-                        ? AppTheme.surfaceColor
+                        ? AppTheme.of(context).surface
                         : AppTheme.secondaryColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
@@ -476,15 +476,15 @@ class _StoreScreenState extends State<StoreScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: AppTheme.of(context).surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('당첨 확률표',
+          Text('당첨 확률표',
               style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.of(context).textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 14)),
           const SizedBox(height: 10),
@@ -512,15 +512,15 @@ class _StoreScreenState extends State<StoreScreen>
                           color: isSoldOut ? Colors.grey : color,
                           shape: BoxShape.circle),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Row(
                         children: [
                           Text(prize.name,
                               style: TextStyle(
                                   color: isSoldOut
-                                      ? AppTheme.textSecondary
-                                      : AppTheme.textSecondary,
+                                      ? AppTheme.of(context).textSecondary
+                                      : AppTheme.of(context).textSecondary,
                                   fontSize: 13)),
                           if (isGifticon) ...[
                             const SizedBox(width: 6),
@@ -553,10 +553,10 @@ class _StoreScreenState extends State<StoreScreen>
                               color: color,
                               fontWeight: FontWeight.bold,
                               fontSize: 13)),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Text('${pct.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 13)),
+                        style: TextStyle(
+                            color: AppTheme.of(context).textSecondary, fontSize: 13)),
                   ],
                 ),
               ),
@@ -570,9 +570,9 @@ class _StoreScreenState extends State<StoreScreen>
   Widget _buildSlotMachine(RouletteConfig config) {
     const windowHeight = _slotItemExtent * 3;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 300),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: AppTheme.of(context).surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _isSpinning
@@ -637,8 +637,8 @@ class _StoreScreenState extends State<StoreScreen>
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            AppTheme.surfaceColor,
-                            AppTheme.surfaceColor.withValues(alpha: 0),
+                            AppTheme.of(context).surface,
+                            AppTheme.of(context).surface.withValues(alpha: 0),
                           ],
                         ),
                         borderRadius: const BorderRadius.vertical(
@@ -646,7 +646,7 @@ class _StoreScreenState extends State<StoreScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: _slotItemExtent),
+                  SizedBox(height: _slotItemExtent),
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
@@ -654,8 +654,8 @@ class _StoreScreenState extends State<StoreScreen>
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            AppTheme.surfaceColor,
-                            AppTheme.surfaceColor.withValues(alpha: 0),
+                            AppTheme.of(context).surface,
+                            AppTheme.of(context).surface.withValues(alpha: 0),
                           ],
                         ),
                         borderRadius: const BorderRadius.vertical(
@@ -701,15 +701,15 @@ class _StoreScreenState extends State<StoreScreen>
                 size: 20,
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(prize.name,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                      style: TextStyle(
+                          color: AppTheme.of(context).textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 14)),
                   Text(
@@ -717,7 +717,7 @@ class _StoreScreenState extends State<StoreScreen>
                     style: TextStyle(
                         color: isSoldOut
                             ? Colors.redAccent
-                            : AppTheme.textSecondary,
+                            : AppTheme.of(context).textSecondary,
                         fontSize: 12,
                         fontWeight: isSoldOut
                             ? FontWeight.bold
@@ -912,25 +912,25 @@ class _StoreScreenState extends State<StoreScreen>
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: AppTheme.cardColor,
+              backgroundColor: AppTheme.of(context).card,
               title: const Text('🎉 기프티콘 당첨!',
                   style: TextStyle(color: AppTheme.creditGold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.card_giftcard,
+                  Icon(Icons.card_giftcard,
                       size: 48, color: AppTheme.primaryColor),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text(prize.name,
-                      style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                      style: TextStyle(
+                          color: AppTheme.of(context).textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text('현재 재고가 소진되어\n100 크레딧으로 대체되었습니다.',
+                  SizedBox(height: 8),
+                  Text('현재 재고가 소진되어\n100 크레딧으로 대체되었습니다.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 13)),
+                          color: AppTheme.of(context).textSecondary, fontSize: 13)),
                 ],
               ),
               actions: [
@@ -964,17 +964,17 @@ class _StoreScreenState extends State<StoreScreen>
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppTheme.cardColor,
+            backgroundColor: AppTheme.of(context).card,
             title: const Text('🎉 축하합니다!',
                 style: TextStyle(color: AppTheme.creditGold)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.casino, size: 48, color: AppTheme.creditGold),
-                const SizedBox(height: 12),
+                Icon(Icons.casino, size: 48, color: AppTheme.creditGold),
+                SizedBox(height: 12),
                 Text(prize.name,
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                    style: TextStyle(
+                        color: AppTheme.of(context).textPrimary,
                         fontSize: 22,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
@@ -1005,9 +1005,9 @@ class _StoreScreenState extends State<StoreScreen>
   Widget _buildRaffleTab() {
     final user = context.watch<AuthProvider>().user;
     if (user == null) {
-      return const Center(
+      return Center(
         child: Text('로그인이 필요합니다.',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: AppTheme.of(context).textSecondary)),
       );
     }
 
@@ -1020,9 +1020,9 @@ class _StoreScreenState extends State<StoreScreen>
           stream: _storeService.watchRaffleRooms(),
           builder: (context, roomSnap) {
             if (roomSnap.hasError || !roomSnap.hasData) {
-              return const Center(
+              return Center(
                 child: Text('응모방을 불러오는 중...',
-                    style: TextStyle(color: AppTheme.textSecondary)),
+                    style: TextStyle(color: AppTheme.of(context).textSecondary)),
               );
             }
 
@@ -1037,9 +1037,9 @@ class _StoreScreenState extends State<StoreScreen>
             }).toList();
 
             if (rooms.isEmpty) {
-              return const Center(
+              return Center(
                 child: Text('진행 중인 응모방이 없습니다.',
-                    style: TextStyle(color: AppTheme.textSecondary)),
+                    style: TextStyle(color: AppTheme.of(context).textSecondary)),
               );
             }
 
@@ -1114,8 +1114,8 @@ class _StoreScreenState extends State<StoreScreen>
                       child: Text(room.title,
                           style: TextStyle(
                             color: isClosed
-                                ? AppTheme.textSecondary
-                                : AppTheme.textPrimary,
+                                ? AppTheme.of(context).textSecondary
+                                : AppTheme.of(context).textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           )),
@@ -1160,7 +1160,7 @@ class _StoreScreenState extends State<StoreScreen>
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: isClosed
-                              ? AppTheme.surfaceColor
+                              ? AppTheme.of(context).surface
                               : AppTheme.accentRed.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -1168,7 +1168,7 @@ class _StoreScreenState extends State<StoreScreen>
                           isClosed ? '종료됨' : '진행중',
                           style: TextStyle(
                             color: isClosed
-                                ? AppTheme.textSecondary
+                                ? AppTheme.of(context).textSecondary
                                 : AppTheme.accentRed,
                             fontSize: 12,
                           ),
@@ -1176,10 +1176,10 @@ class _StoreScreenState extends State<StoreScreen>
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text('상품: ${room.prize}',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary)),
+                    style: TextStyle(
+                        color: AppTheme.of(context).textSecondary)),
                 if (isClosed && room.winner.isNotEmpty && !iWon) ...[
                   const SizedBox(height: 4),
                   Row(children: [
@@ -1191,15 +1191,15 @@ class _StoreScreenState extends State<StoreScreen>
                             color: AppTheme.creditGold, fontSize: 13)),
                   ]),
                 ],
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: room.fillRatio,
-                    backgroundColor: AppTheme.surfaceColor,
+                    backgroundColor: AppTheme.of(context).surface,
                     valueColor: AlwaysStoppedAnimation(
                       isClosed
-                          ? AppTheme.textSecondary
+                          ? AppTheme.of(context).textSecondary
                           : room.fillRatio > 0.8
                               ? AppTheme.accentRed
                               : AppTheme.primaryColor,
@@ -1216,8 +1216,8 @@ class _StoreScreenState extends State<StoreScreen>
                       children: [
                         Text(
                           '${room.currentCreditsPool} / ${room.totalCreditsPool} 크레딧',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 13),
+                          style: TextStyle(
+                              color: AppTheme.of(context).textSecondary, fontSize: 13),
                         ),
                         if (myTickets > 0)
                           Text(
@@ -1232,12 +1232,12 @@ class _StoreScreenState extends State<StoreScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
+                          color: AppTheme.of(context).surface,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('응모 종료',
+                        child: Text('응모 종료',
                             style: TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.of(context).textSecondary,
                                 fontSize: 14)),
                       )
                     else
@@ -1275,18 +1275,18 @@ class _StoreScreenState extends State<StoreScreen>
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                backgroundColor: AppTheme.cardColor,
+                backgroundColor: AppTheme.of(context).card,
                 title: const Text('추첨 완료!',
                     style: TextStyle(color: AppTheme.creditGold)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.emoji_events,
+                    Icon(Icons.emoji_events,
                         size: 48, color: AppTheme.creditGold),
-                    const SizedBox(height: 12),
-                    const Text('풀이 가득 찼습니다!\n추첨이 완료되었습니다.',
+                    SizedBox(height: 12),
+                    Text('풀이 가득 찼습니다!\n추첨이 완료되었습니다.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppTheme.textPrimary)),
+                        style: TextStyle(color: AppTheme.of(context).textPrimary)),
                   ],
                 ),
                 actions: [
@@ -1426,8 +1426,8 @@ class _RaffleEntrySheetState extends State<_RaffleEntrySheet> {
     final remaining = room.totalCreditsPool - room.currentCreditsPool;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.cardColor,
+      decoration: BoxDecoration(
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -1442,48 +1442,48 @@ class _RaffleEntrySheetState extends State<_RaffleEntrySheet> {
         children: [
           Text(
             room.title,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
+            style: TextStyle(
+                color: AppTheme.of(context).textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             '상품: ${room.prize}',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(
+                color: AppTheme.of(context).textSecondary, fontSize: 14),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // 진행바
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: room.fillRatio,
-              backgroundColor: AppTheme.surfaceColor,
+              backgroundColor: AppTheme.of(context).surface,
               valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor),
               minHeight: 10,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             '${room.currentCreditsPool} / ${room.totalCreditsPool} 크레딧 (남은 자리: $remaining)',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 12),
+            style: TextStyle(
+                color: AppTheme.of(context).textSecondary, fontSize: 12),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // 티켓 입력
           TextField(
             controller: _ticketCtrl,
             keyboardType: TextInputType.number,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.of(context).textPrimary),
             decoration: InputDecoration(
               labelText: '투입할 티켓 수 (1크레딧 = 1티켓)',
               labelStyle:
-                  const TextStyle(color: AppTheme.textSecondary),
+                  TextStyle(color: AppTheme.of(context).textSecondary),
               hintText: '최대 $remaining',
-              hintStyle: const TextStyle(color: AppTheme.textSecondary),
+              hintStyle: TextStyle(color: AppTheme.of(context).textSecondary),
               filled: true,
-              fillColor: AppTheme.surfaceColor,
+              fillColor: AppTheme.of(context).surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -1578,7 +1578,7 @@ class _ExchangeListTile extends StatelessWidget {
                           end: Alignment.bottomRight,
                         )
                       : null,
-                  color: canAfford ? null : AppTheme.storeCard,
+                  color: canAfford ? null : AppTheme.of(context).storeCard,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: glowColor.withValues(alpha: canAfford ? 0.4 : 0.1),
@@ -1587,7 +1587,7 @@ class _ExchangeListTile extends StatelessWidget {
                 ),
                 child: Icon(
                   icon,
-                  color: canAfford ? glowColor : AppTheme.textMuted,
+                  color: canAfford ? glowColor : AppTheme.of(context).textMuted,
                   size: 26,
                 ),
               ),
@@ -1600,8 +1600,8 @@ class _ExchangeListTile extends StatelessWidget {
                       name,
                       style: TextStyle(
                         color: canAfford
-                            ? AppTheme.textPrimary
-                            : AppTheme.textMuted,
+                            ? AppTheme.of(context).textPrimary
+                            : AppTheme.of(context).textMuted,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         letterSpacing: -0.2,
@@ -1609,21 +1609,21 @@ class _ExchangeListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5),
+                    SizedBox(height: 5),
                     Row(
                       children: [
                         Icon(Icons.monetization_on_rounded,
                             size: 13,
                             color: canAfford
                                 ? AppTheme.creditGold
-                                : AppTheme.textMuted),
-                        const SizedBox(width: 3),
+                                : AppTheme.of(context).textMuted),
+                        SizedBox(width: 3),
                         Text(
                           '$cost C',
                           style: TextStyle(
                             color: canAfford
                                 ? AppTheme.creditGold
-                                : AppTheme.textMuted,
+                                : AppTheme.of(context).textMuted,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -1645,15 +1645,15 @@ class _ExchangeListTile extends StatelessWidget {
                           BoxShadow(
                             color: AppTheme.primaryColor.withValues(alpha: 0.4),
                             blurRadius: 10,
-                            offset: const Offset(0, 3),
+                            offset: Offset(0, 3),
                           ),
                         ],
                       )
                     : BoxDecoration(
-                        color: AppTheme.storeCard,
+                        color: AppTheme.of(context).storeCard,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppTheme.borderSubtle, width: 1),
+                            color: AppTheme.of(context).borderSubtle, width: 1),
                       ),
                 child: InkWell(
                   onTap: canAfford ? onTap : null,
@@ -1664,7 +1664,7 @@ class _ExchangeListTile extends StatelessWidget {
                       style: TextStyle(
                         color: canAfford
                             ? Colors.white
-                            : AppTheme.textMuted,
+                            : AppTheme.of(context).textMuted,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1698,8 +1698,8 @@ class _ExchangeBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.cardColor,
+      decoration: BoxDecoration(
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -1711,28 +1711,28 @@ class _ExchangeBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.card_giftcard,
+          Icon(Icons.card_giftcard,
               size: 48, color: AppTheme.primaryColor),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             itemName,
-            style: const TextStyle(
-                color: AppTheme.textPrimary,
+            style: TextStyle(
+                color: AppTheme.of(context).textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '$cost 크레딧을 사용합니다',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 14),
+            style: TextStyle(
+                color: AppTheme.of(context).textSecondary, fontSize: 14),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             '재고: $stockCount개',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(
+                color: AppTheme.of(context).textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 24),
           Row(

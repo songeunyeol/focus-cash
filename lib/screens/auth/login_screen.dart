@@ -124,12 +124,12 @@ class LoginScreen extends StatelessWidget {
                           ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     '집중하면 돈이 되는 시간',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.of(context).textSecondary,
                           letterSpacing: 0.3,
                         ),
                   ),

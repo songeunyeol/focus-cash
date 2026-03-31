@@ -113,16 +113,16 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 '랭킹에 표시될 닉네임과 아바타를 선택해주세요',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.of(context).textSecondary,
                     ),
               ),
 
-              const SizedBox(height: 36),
+              SizedBox(height: 36),
 
               // 선택된 아바타 미리보기
               Center(
@@ -130,7 +130,7 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                   width: 96,
                   height: 96,
                   decoration: BoxDecoration(
-                    color: AppTheme.elevatedColor,
+                    color: AppTheme.of(context).elevated,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: AppTheme.primaryColor.withValues(alpha: 0.6),
@@ -166,11 +166,11 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '아바타 선택',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.of(context).textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -193,16 +193,16 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedAvatar = index),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
+                      duration: Duration(milliseconds: 150),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                            : AppTheme.elevatedColor,
+                            : AppTheme.of(context).elevated,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected
                               ? AppTheme.primaryColor
-                              : AppTheme.borderMid,
+                              : AppTheme.of(context).borderMid,
                           width: isSelected ? 2 : 1,
                         ),
                         boxShadow: isSelected
@@ -240,26 +240,26 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '닉네임',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.of(context).textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               TextField(
                 controller: _nicknameController,
                 maxLength: 10,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: AppTheme.of(context).textPrimary),
                 decoration: InputDecoration(
                   hintText: '2~10자 입력',
-                  hintStyle: const TextStyle(color: AppTheme.textSecondary),
+                  hintStyle: TextStyle(color: AppTheme.of(context).textSecondary),
                   filled: true,
-                  fillColor: AppTheme.surfaceColor,
+                  fillColor: AppTheme.of(context).surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -267,15 +267,15 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
-                        const BorderSide(color: AppTheme.borderMid, width: 1),
+                        BorderSide(color: AppTheme.of(context).borderMid, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
+                    borderSide: BorderSide(
                         color: AppTheme.primaryColor, width: 1.5),
                   ),
                   counterStyle:
-                      const TextStyle(color: AppTheme.textSecondary),
+                      TextStyle(color: AppTheme.of(context).textSecondary),
                 ),
               ),
 
@@ -292,11 +292,11 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '친구 초대 코드 (선택)',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.of(context).textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -307,25 +307,25 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                 '친구에게 받은 초대 코드를 입력하면 첫 집중 완료 후 둘 다 200 크레딧!',
                 style: TextStyle(color: AppTheme.creditGold, fontSize: 12),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               TextField(
                 controller: _inviteCodeController,
                 maxLength: 8,
                 textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   letterSpacing: 3,
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
                   hintText: '8자리 코드 입력',
-                  hintStyle: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  hintStyle: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     letterSpacing: 0,
                     fontWeight: FontWeight.normal,
                   ),
                   filled: true,
-                  fillColor: AppTheme.surfaceColor,
+                  fillColor: AppTheme.of(context).surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -333,17 +333,17 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
-                        const BorderSide(color: AppTheme.borderMid, width: 1),
+                        BorderSide(color: AppTheme.of(context).borderMid, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
+                    borderSide: BorderSide(
                         color: AppTheme.creditGold, width: 1.5),
                   ),
-                  prefixIcon: const Icon(Icons.card_giftcard,
+                  prefixIcon: Icon(Icons.card_giftcard,
                       color: AppTheme.creditGold),
                   counterStyle:
-                      const TextStyle(color: AppTheme.textSecondary),
+                      TextStyle(color: AppTheme.of(context).textSecondary),
                 ),
               ),
 

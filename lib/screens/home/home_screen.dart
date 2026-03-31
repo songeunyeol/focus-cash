@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           ],
         ),
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: AppTheme.of(context).surface,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 2),
@@ -93,18 +93,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
-          border: const Border(
-            top: BorderSide(color: AppTheme.borderSubtle, width: 1),
+          color: AppTheme.of(context).surface,
+          border: Border(
+            top: BorderSide(color: AppTheme.of(context).borderSubtle, width: 1),
           ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppTheme.surfaceColor,
+          backgroundColor: AppTheme.of(context).surface,
           selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: AppTheme.textMuted,
+          unselectedItemColor: AppTheme.of(context).textMuted,
           selectedLabelStyle: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
@@ -341,16 +341,16 @@ class _RecentSessionsList extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: AppTheme.of(context).card,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, color: AppTheme.textSecondary, size: 20),
-                SizedBox(width: 12),
+                Icon(Icons.info_outline, color: AppTheme.of(context).textSecondary, size: 20),
+                const SizedBox(width: 12),
                 Text(
                   '아직 집중 기록이 없어요. 첫 세션을 시작해보세요!',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  style: TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 13),
                 ),
               ],
             ),
@@ -379,7 +379,7 @@ class _SessionItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isCompleted
@@ -416,7 +416,7 @@ class _SessionItem extends StatelessWidget {
                 Text(
                   isCompleted ? '집중 완료' : '세션 포기',
                   style: TextStyle(
-                    color: isCompleted ? AppTheme.textPrimary : AppTheme.textSecondary,
+                    color: isCompleted ? AppTheme.of(context).textPrimary : AppTheme.of(context).textSecondary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -424,8 +424,8 @@ class _SessionItem extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${session.actualMinutes}분 집중 · $timeAgo',
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     fontSize: 12,
                   ),
                 ),

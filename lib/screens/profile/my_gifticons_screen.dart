@@ -52,11 +52,11 @@ class _MyGifticonsScreenState extends State<MyGifticonsScreen> {
     final storeService = _storeService;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('내 기프티콘')),
+      appBar: AppBar(title: Text('내 기프티콘')),
       body: user == null
-          ? const Center(
+          ? Center(
               child: Text('로그인이 필요합니다.',
-                  style: TextStyle(color: AppTheme.textSecondary)),
+                  style: TextStyle(color: AppTheme.of(context).textSecondary)),
             )
           : StreamBuilder<List<GifticonCode>>(
               stream: storeService.watchMyGifticons(user.uid),
@@ -74,16 +74,16 @@ class _MyGifticonsScreenState extends State<MyGifticonsScreen> {
                       children: [
                         Icon(Icons.card_giftcard_outlined,
                             size: 64,
-                            color: AppTheme.textSecondary
+                            color: AppTheme.of(context).textSecondary
                                 .withValues(alpha: 0.4)),
-                        const SizedBox(height: 16),
-                        const Text('받은 상품이 없습니다.',
+                        SizedBox(height: 16),
+                        Text('받은 상품이 없습니다.',
                             style:
-                                TextStyle(color: AppTheme.textSecondary)),
-                        const SizedBox(height: 8),
-                        const Text('상점 교환, 룰렛, 응모방에서 상품을 받아보세요!',
+                                TextStyle(color: AppTheme.of(context).textSecondary)),
+                        SizedBox(height: 8),
+                        Text('상점 교환, 룰렛, 응모방에서 상품을 받아보세요!',
                             style: TextStyle(
-                                color: AppTheme.textSecondary,
+                                color: AppTheme.of(context).textSecondary,
                                 fontSize: 13)),
                       ],
                     ),
@@ -136,7 +136,7 @@ class _DirectDeliveryCardState extends State<_DirectDeliveryCard> {
       result = await showModalBottomSheet<Map<String, String>>(
         context: context,
         isScrollControlled: true,
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: AppTheme.of(context).surface,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -203,19 +203,19 @@ class _DirectDeliveryCardState extends State<_DirectDeliveryCard> {
                   child: const Icon(Icons.local_shipping,
                       color: AppTheme.accentGreen, size: 22),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(widget.gifticon.storeItemName,
-                          style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                          style: TextStyle(
+                              color: AppTheme.of(context).textPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: 15)),
-                      const Text('직접배송 상품',
+                      Text('직접배송 상품',
                           style: TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12)),
+                              color: AppTheme.of(context).textSecondary, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -242,22 +242,22 @@ class _DirectDeliveryCardState extends State<_DirectDeliveryCard> {
               ],
             ),
             if (submitted) ...[
-              const SizedBox(height: 12),
-              const Divider(color: AppTheme.surfaceColor, height: 1),
+              SizedBox(height: 12),
+              Divider(color: AppTheme.of(context).surface, height: 1),
               const SizedBox(height: 12),
               _InfoRow(label: '수령인', value: widget.gifticon.deliveryName),
               const SizedBox(height: 4),
               _InfoRow(label: '연락처', value: widget.gifticon.deliveryPhone),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               _InfoRow(label: '배송지', value: widget.gifticon.deliveryAddress),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: _loading ? null : _showDeliveryForm,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.textSecondary,
-                    side: const BorderSide(color: AppTheme.textSecondary),
+                    foregroundColor: AppTheme.of(context).textSecondary,
+                    side: BorderSide(color: AppTheme.of(context).textSecondary),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
@@ -344,15 +344,15 @@ class _DeliveryFormSheetState extends State<_DeliveryFormSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('배송지 입력',
+          Text('배송지 입력',
               style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.of(context).textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text('${widget.itemName} 배송을 위한 정보를 입력해주세요.',
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 13)),
+              style: TextStyle(
+                  color: AppTheme.of(context).textSecondary, fontSize: 13)),
           const SizedBox(height: 20),
           _DeliveryField(controller: _nameCtrl, label: '수령인 이름', hint: '홍길동'),
           const SizedBox(height: 12),
@@ -416,15 +416,15 @@ class _DeliveryField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: const TextStyle(color: AppTheme.textPrimary),
+      style: TextStyle(color: AppTheme.of(context).textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppTheme.textSecondary),
+        labelStyle: TextStyle(color: AppTheme.of(context).textSecondary),
         hintText: hint,
         hintStyle:
-            TextStyle(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+            TextStyle(color: AppTheme.of(context).textSecondary.withValues(alpha: 0.5)),
         filled: true,
-        fillColor: AppTheme.cardColor,
+        fillColor: AppTheme.of(context).card,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -452,14 +452,14 @@ class _InfoRow extends StatelessWidget {
         SizedBox(
           width: 48,
           child: Text(label,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 12)),
+              style: TextStyle(
+                  color: AppTheme.of(context).textSecondary, fontSize: 12)),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(value,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary, fontSize: 13)),
+              style: TextStyle(
+                  color: AppTheme.of(context).textPrimary, fontSize: 13)),
         ),
       ],
     );
@@ -507,23 +507,23 @@ class _RoulettePrizeCardState extends State<_RoulettePrizeCard> {
                     child: const Icon(Icons.casino,
                         color: AppTheme.creditGold, size: 22),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.gifticon.storeItemName,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.of(context).textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
                         ),
                         Text(
                           '룰렛 당첨 · ${_formatDate(widget.gifticon.usedAt)}',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                              color: AppTheme.of(context).textSecondary, fontSize: 12),
                         ),
                       ],
                     ),
@@ -542,20 +542,20 @@ class _RoulettePrizeCardState extends State<_RoulettePrizeCard> {
                             fontWeight: FontWeight.w600)),
                   ),
                   if (hasImage) ...[
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Icon(
                       _expanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.of(context).textSecondary,
                       size: 20,
                     ),
                   ],
                 ],
               ),
               if (_expanded && hasImage) ...[
-                const SizedBox(height: 14),
-                const Divider(color: AppTheme.surfaceColor, height: 1),
+                SizedBox(height: 14),
+                Divider(color: AppTheme.of(context).surface, height: 1),
                 const SizedBox(height: 14),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -612,23 +612,23 @@ class _RaffleGifticonCardState extends State<_RaffleGifticonCard> {
                     child: const Icon(Icons.emoji_events,
                         color: AppTheme.accentGreen, size: 22),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.gifticon.storeItemName,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.of(context).textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
                         ),
                         Text(
                           '응모방 당첨 · ${_formatDate(widget.gifticon.usedAt)}',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                              color: AppTheme.of(context).textSecondary, fontSize: 12),
                         ),
                       ],
                     ),
@@ -646,19 +646,19 @@ class _RaffleGifticonCardState extends State<_RaffleGifticonCard> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600)),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Icon(
                     _expanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.of(context).textSecondary,
                     size: 20,
                   ),
                 ],
               ),
               if (_expanded) ...[
-                const SizedBox(height: 14),
-                const Divider(color: AppTheme.surfaceColor, height: 1),
+                SizedBox(height: 14),
+                Divider(color: AppTheme.of(context).surface, height: 1),
                 const SizedBox(height: 14),
                 if (hasImage)
                   ClipRRect(
@@ -707,19 +707,19 @@ class _RaffleGifticonCardState extends State<_RaffleGifticonCard> {
                     ),
                   ),
                 ] else ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.access_time,
                           size: 13,
-                          color: AppTheme.textSecondary
+                          color: AppTheme.of(context).textSecondary
                               .withValues(alpha: 0.6)),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         '확인 완료 · 24시간 후 자동으로 사라집니다',
                         style: TextStyle(
-                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                          color: AppTheme.of(context).textSecondary.withValues(alpha: 0.6),
                           fontSize: 12,
                         ),
                       ),
@@ -777,15 +777,15 @@ class _GifticonCardState extends State<_GifticonCard> {
                     child: const Icon(Icons.card_giftcard,
                         color: AppTheme.primaryColor, size: 22),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.gifticon.storeItemName,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.of(context).textPrimary,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
@@ -793,8 +793,8 @@ class _GifticonCardState extends State<_GifticonCard> {
                         if (widget.gifticon.usedAt != null)
                           Text(
                             '교환일: ${_formatDate(widget.gifticon.usedAt)}',
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary,
+                            style: TextStyle(
+                                color: AppTheme.of(context).textSecondary,
                                 fontSize: 12),
                           ),
                       ],
@@ -804,15 +804,15 @@ class _GifticonCardState extends State<_GifticonCard> {
                     _expanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.of(context).textSecondary,
                   ),
                 ],
               ),
 
               // 펼쳐진 상세 내용
               if (_expanded) ...[
-                const SizedBox(height: 16),
-                const Divider(color: AppTheme.surfaceColor, height: 1),
+                SizedBox(height: 16),
+                Divider(color: AppTheme.of(context).surface, height: 1),
                 const SizedBox(height: 16),
 
                 // 이미지
@@ -830,7 +830,7 @@ class _GifticonCardState extends State<_GifticonCard> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
+                    color: AppTheme.of(context).surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                         color:
@@ -838,15 +838,15 @@ class _GifticonCardState extends State<_GifticonCard> {
                   ),
                   child: Column(
                     children: [
-                      const Text('기프티콘 코드',
+                      Text('기프티콘 코드',
                           style: TextStyle(
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.of(context).textSecondary,
                               fontSize: 12)),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       SelectableText(
                         widget.gifticon.code,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: AppTheme.of(context).textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.5,

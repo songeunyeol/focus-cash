@@ -94,14 +94,14 @@ class _RankingScreenState extends State<RankingScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.people_outline, color: AppTheme.textSecondary),
+            icon: Icon(Icons.people_outline, color: AppTheme.of(context).textSecondary),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FriendsScreen()),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
+            icon: Icon(Icons.refresh_rounded, color: AppTheme.of(context).textSecondary),
             onPressed: _refresh,
           ),
         ],
@@ -112,7 +112,7 @@ class _RankingScreenState extends State<RankingScreen>
             indicatorColor: AppTheme.primaryColor,
             indicatorSize: TabBarIndicatorSize.label,
             labelColor: AppTheme.primaryColor,
-            unselectedLabelColor: AppTheme.textSecondary,
+            unselectedLabelColor: AppTheme.of(context).textSecondary,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
             tabs: const [
               Tab(icon: Icon(Icons.public_outlined, size: 18), text: '전체 랭킹'),
@@ -161,19 +161,19 @@ class _RankingScreenState extends State<RankingScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: AppTheme.of(context).surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.borderSubtle),
+                border: Border.all(color: AppTheme.of(context).borderSubtle),
               ),
-              child: const Icon(Icons.people_outline,
-                  size: 40, color: AppTheme.textMuted),
+              child: Icon(Icons.people_outline,
+                  size: 40, color: AppTheme.of(context).textMuted),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               '친구를 추가하면\n친구 랭킹을 볼 수 있어요!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.of(context).textSecondary,
                 fontSize: 15,
                 height: 1.6,
               ),
@@ -218,13 +218,13 @@ class _RankingScreenState extends State<RankingScreen>
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.wifi_off_rounded, color: AppTheme.textMuted, size: 40),
-                SizedBox(height: 12),
+              children: [
+                Icon(Icons.wifi_off_rounded, color: AppTheme.of(context).textMuted, size: 40),
+                const SizedBox(height: 12),
                 Text(
                   '랭킹을 불러오지 못했어요\n잠시 후 다시 시도해주세요',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppTheme.textSecondary, height: 1.6),
+                  style: TextStyle(color: AppTheme.of(context).textSecondary, height: 1.6),
                 ),
               ],
             ),
@@ -236,14 +236,14 @@ class _RankingScreenState extends State<RankingScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.timer_outlined,
-                    size: 48, color: AppTheme.textMuted),
+                Icon(Icons.timer_outlined,
+                    size: 48, color: AppTheme.of(context).textMuted),
                 const SizedBox(height: 12),
                 Text(
                   isFriend
                       ? '아직 친구가 없거나 집중 기록이 없어요.'
                       : '아직 집중 기록이 없습니다.',
-                  style: const TextStyle(color: AppTheme.textSecondary),
+                  style: TextStyle(color: AppTheme.of(context).textSecondary),
                 ),
               ],
             ),
@@ -358,7 +358,7 @@ class _RankingScreenState extends State<RankingScreen>
           Text(
             name,
             style: TextStyle(
-              color: isMe ? AppTheme.primaryColor : AppTheme.textPrimary,
+              color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textPrimary,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -423,12 +423,12 @@ class _RankingScreenState extends State<RankingScreen>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           gradient: isSelected ? AppTheme.primaryGradient : null,
-          color: isSelected ? null : AppTheme.surfaceColor,
+          color: isSelected ? null : AppTheme.of(context).surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : AppTheme.borderMid,
+                : AppTheme.of(context).borderMid,
           ),
           boxShadow: isSelected
               ? [
@@ -443,7 +443,7 @@ class _RankingScreenState extends State<RankingScreen>
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
+            color: isSelected ? Colors.white : AppTheme.of(context).textSecondary,
             fontWeight: FontWeight.bold,
             fontSize: 13,
           ),
@@ -471,12 +471,12 @@ class _RankingScreenState extends State<RankingScreen>
       decoration: BoxDecoration(
         color: isMe
             ? AppTheme.primaryColor.withValues(alpha: 0.08)
-            : AppTheme.cardColor,
+            : AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isMe
               ? AppTheme.primaryColor.withValues(alpha: 0.4)
-              : AppTheme.borderSubtle,
+              : AppTheme.of(context).borderSubtle,
           width: isMe ? 1.5 : 1,
         ),
         boxShadow: isMe
@@ -498,7 +498,7 @@ class _RankingScreenState extends State<RankingScreen>
               '$rank',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isMe ? AppTheme.primaryColor : AppTheme.textMuted,
+                color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textMuted,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -511,11 +511,11 @@ class _RankingScreenState extends State<RankingScreen>
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.surfaceColor,
+              color: AppTheme.of(context).surface,
               border: Border.all(
                 color: isMe
                     ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                    : AppTheme.borderMid,
+                    : AppTheme.of(context).borderMid,
               ),
             ),
             child: Center(
@@ -538,7 +538,7 @@ class _RankingScreenState extends State<RankingScreen>
                       style: TextStyle(
                         color: isMe
                             ? AppTheme.primaryColor
-                            : AppTheme.textPrimary,
+                            : AppTheme.of(context).textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -573,8 +573,8 @@ class _RankingScreenState extends State<RankingScreen>
                       const SizedBox(width: 2),
                       Text(
                         '$streak일 연속',
-                        style: const TextStyle(
-                          color: AppTheme.textMuted,
+                        style: TextStyle(
+                          color: AppTheme.of(context).textMuted,
                           fontSize: 11,
                         ),
                       ),
@@ -588,7 +588,7 @@ class _RankingScreenState extends State<RankingScreen>
           Text(
             timeStr,
             style: TextStyle(
-              color: isMe ? AppTheme.primaryColor : AppTheme.textPrimary,
+              color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textPrimary,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),

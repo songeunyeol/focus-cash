@@ -102,7 +102,7 @@ class _FocusStatsScreenState extends State<FocusStatsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -116,15 +116,15 @@ class _FocusStatsScreenState extends State<FocusStatsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   '$currentStreak일',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.secondaryColor,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Text(
+                Text(
                   '현재 연속',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  style: TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 13),
                 ),
               ],
             ),
@@ -132,7 +132,7 @@ class _FocusStatsScreenState extends State<FocusStatsScreen> {
           Container(
             width: 1,
             height: 60,
-            color: AppTheme.textSecondary.withAlpha(50),
+            color: AppTheme.of(context).textSecondary.withAlpha(50),
           ),
           Expanded(
             child: Padding(
@@ -151,10 +151,10 @@ class _FocusStatsScreenState extends State<FocusStatsScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
+                  Text(
                     '최장 연속',
                     style:
-                        TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                        TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 13),
                   ),
                 ],
               ),
@@ -224,7 +224,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -245,18 +245,18 @@ class _StatCard extends StatelessWidget {
                 ),
                 TextSpan(
                   text: ' $unit',
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     fontSize: 14,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+            style: TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 12),
           ),
         ],
       ),

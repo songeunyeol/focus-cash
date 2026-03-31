@@ -1,5 +1,24 @@
 import 'package:flutter/material.dart';
 
+// ── Context 기반 동적 색상 ────────────────────────────────
+class _AppColors {
+  final bool isDark;
+  const _AppColors(this.isDark);
+
+  Color get bg       => isDark ? const Color(0xFF0C0C14) : const Color(0xFFF0F2FF);
+  Color get surface  => isDark ? const Color(0xFF14141E) : Colors.white;
+  Color get card     => isDark ? const Color(0xFF14141E) : Colors.white;
+  Color get elevated => isDark ? const Color(0xFF1C1C28) : const Color(0xFFF5F5FF);
+  Color get overlay  => isDark ? const Color(0xFF23232F) : const Color(0xFFEEEEFF);
+  Color get borderSubtle => isDark ? const Color(0x0FFFFFFF) : const Color(0x0F000000);
+  Color get borderMid    => isDark ? const Color(0x1AFFFFFF) : const Color(0x1A000000);
+  Color get textPrimary   => isDark ? const Color(0xFFEAEAEA) : const Color(0xFF1A1A2E);
+  Color get textSecondary => isDark ? const Color(0xFF9A9AB0) : const Color(0xFF5A5A6E);
+  Color get textMuted     => isDark ? const Color(0xFF5A5A72) : const Color(0xFF9A9AB0);
+  Color get storeBg   => isDark ? const Color(0xFF08080F) : const Color(0xFFEEEEFF);
+  Color get storeCard => isDark ? const Color(0xFF111120) : Colors.white;
+}
+
 class AppTheme {
   AppTheme._();
 
@@ -104,6 +123,59 @@ class AppTheme {
       ),
     ],
   );
+
+  // ── Context 기반 동적 색상 접근자 ────────────────────────
+  static _AppColors of(BuildContext context) =>
+      _AppColors(Theme.of(context).brightness == Brightness.dark);
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      brightness: Brightness.light,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: const Color(0xFFF0F2FF),
+      colorScheme: const ColorScheme.light(
+        primary: primaryColor,
+        secondary: secondaryColor,
+        surface: Colors.white,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: Color(0xFF1A1A2E),
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+          side: BorderSide(color: Color(0x0F000000), width: 1),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          elevation: 0,
+        ),
+      ),
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(color: Color(0xFF1A1A2E), fontSize: 32, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(color: Color(0xFF1A1A2E), fontSize: 24, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: Color(0xFF1A1A2E), fontSize: 20, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(color: Color(0xFF5A5A6E), fontSize: 16),
+        bodyLarge: TextStyle(color: Color(0xFF1A1A2E), fontSize: 16),
+        bodyMedium: TextStyle(color: Color(0xFF5A5A6E), fontSize: 14),
+      ),
+    );
+  }
 
   static ThemeData get darkTheme {
     return ThemeData(

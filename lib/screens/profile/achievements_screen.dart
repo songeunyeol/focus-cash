@@ -62,38 +62,38 @@ class AchievementsScreen extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
+        border: Border.all(color: AppTheme.of(context).borderSubtle),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 '획득한 배지',
                 style: TextStyle(
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.of(context).textSecondary,
                   fontSize: 13,
                 ),
               ),
               Text(
                 '$earned / $total',
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppTheme.surfaceColor,
+              backgroundColor: AppTheme.of(context).surface,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppTheme.primaryColor,
               ),
@@ -117,15 +117,15 @@ class _BadgeCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => _showBadgeDetail(context),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: AppTheme.of(context).card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: earned
                 ? AppTheme.primaryColor.withValues(alpha: 0.4)
-                : AppTheme.borderSubtle,
+                : AppTheme.of(context).borderSubtle,
             width: earned ? 1.5 : 1,
           ),
           boxShadow: earned
@@ -149,7 +149,7 @@ class _BadgeCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: earned
                     ? AppTheme.primaryColor.withValues(alpha: 0.12)
-                    : AppTheme.surfaceColor,
+                    : AppTheme.of(context).surface,
                 border: earned
                     ? Border.all(
                         color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -175,21 +175,21 @@ class _BadgeCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               badge['name'] as String,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: earned ? AppTheme.textPrimary : AppTheme.textMuted,
+                color: earned ? AppTheme.of(context).textPrimary : AppTheme.of(context).textMuted,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               earned ? '획득 완료' : '미획득',
               style: TextStyle(
-                color: earned ? AppTheme.primaryColor : AppTheme.textMuted,
+                color: earned ? AppTheme.primaryColor : AppTheme.of(context).textMuted,
                 fontSize: 11,
                 fontWeight: earned ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -203,7 +203,7 @@ class _BadgeCard extends StatelessWidget {
   void _showBadgeDetail(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: AppTheme.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -216,7 +216,7 @@ class _BadgeCard extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.textMuted,
+                color: AppTheme.of(context).textMuted,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -229,13 +229,13 @@ class _BadgeCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: earned
                     ? AppTheme.primaryColor.withValues(alpha: 0.12)
-                    : AppTheme.cardColor,
+                    : AppTheme.of(context).card,
                 border: earned
                     ? Border.all(
                         color: AppTheme.primaryColor.withValues(alpha: 0.4),
                         width: 2,
                       )
-                    : Border.all(color: AppTheme.borderSubtle),
+                    : Border.all(color: AppTheme.of(context).borderSubtle),
                 boxShadow: earned
                     ? [
                         BoxShadow(
@@ -256,43 +256,43 @@ class _BadgeCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               badge['name'] as String,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: AppTheme.of(context).textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               badge['desc'] as String,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: AppTheme.of(context).textSecondary,
                 fontSize: 14,
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: earned
                     ? AppTheme.primaryColor.withValues(alpha: 0.12)
-                    : AppTheme.cardColor,
+                    : AppTheme.of(context).card,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: earned
                       ? AppTheme.primaryColor.withValues(alpha: 0.4)
-                      : AppTheme.borderSubtle,
+                      : AppTheme.of(context).borderSubtle,
                 ),
               ),
               child: Text(
                 earned ? '획득 완료' : '미획득',
                 style: TextStyle(
-                  color: earned ? AppTheme.primaryColor : AppTheme.textMuted,
+                  color: earned ? AppTheme.primaryColor : AppTheme.of(context).textMuted,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),

@@ -176,13 +176,13 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
       children: [
         IconButton(
           onPressed: _prevMonth,
-          icon: const Icon(Icons.chevron_left_rounded,
-              color: AppTheme.textSecondary),
+          icon: Icon(Icons.chevron_left_rounded,
+              color: AppTheme.of(context).textSecondary),
         ),
         Text(
           '${_focusedMonth.year}년 ${_focusedMonth.month}월',
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: AppTheme.of(context).textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 17,
           ),
@@ -191,7 +191,7 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
           onPressed: isCurrentMonth ? null : _nextMonth,
           icon: Icon(
             Icons.chevron_right_rounded,
-            color: isCurrentMonth ? AppTheme.textMuted : AppTheme.textSecondary,
+            color: isCurrentMonth ? AppTheme.of(context).textMuted : AppTheme.of(context).textSecondary,
           ),
         ),
       ],
@@ -206,8 +206,8 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
                 child: Center(
                   child: Text(
                     d,
-                    style: const TextStyle(
-                      color: AppTheme.textMuted,
+                    style: TextStyle(
+                      color: AppTheme.of(context).textMuted,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -270,10 +270,10 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
                         '$day',
                         style: TextStyle(
                           color: isFuture
-                              ? AppTheme.textMuted
+                              ? AppTheme.of(context).textMuted
                               : isToday
                                   ? AppTheme.primaryColor
-                                  : AppTheme.textPrimary,
+                                  : AppTheme.of(context).textPrimary,
                           fontSize: 13,
                           fontWeight: isToday
                               ? FontWeight.bold
@@ -351,10 +351,10 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
           height: 8,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Text(label,
-            style: const TextStyle(
-                color: AppTheme.textMuted, fontSize: 12)),
+            style: TextStyle(
+                color: AppTheme.of(context).textMuted, fontSize: 12)),
       ],
     );
   }
@@ -371,7 +371,7 @@ class _FocusCalendarScreenState extends State<FocusCalendarScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: AppTheme.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -432,8 +432,8 @@ class _DayDetailSheetState extends State<_DayDetailSheet> {
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('메모가 저장되었어요'),
-          backgroundColor: AppTheme.surfaceColor,
+          content: Text('메모가 저장되었어요'),
+          backgroundColor: AppTheme.of(context).surface,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -480,16 +480,16 @@ class _DayDetailSheetState extends State<_DayDetailSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.textMuted,
+                color: AppTheme.of(context).textMuted,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Text(
             _formatDate(widget.date),
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
+            style: TextStyle(
+              color: AppTheme.of(context).textSecondary,
               fontSize: 13,
             ),
           ),
@@ -537,31 +537,31 @@ class _DayDetailSheetState extends State<_DayDetailSheet> {
               },
             ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Memo
           Text(
             '하루 메모',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
+            style: TextStyle(
+              color: AppTheme.of(context).textSecondary,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           TextField(
             controller: _noteController,
             maxLines: 2,
             maxLength: 100,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            style: TextStyle(color: AppTheme.of(context).textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: '오늘 집중하면서 느낀 점을 기록해보세요',
-              hintStyle: const TextStyle(
-                  color: AppTheme.textMuted, fontSize: 13),
+              hintStyle: TextStyle(
+                  color: AppTheme.of(context).textMuted, fontSize: 13),
               counterStyle:
-                  const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                  TextStyle(color: AppTheme.of(context).textMuted, fontSize: 11),
               filled: true,
-              fillColor: AppTheme.cardColor,
+              fillColor: AppTheme.of(context).card,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -642,20 +642,20 @@ class _SessionRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderSubtle),
+        border: Border.all(color: AppTheme.of(context).borderSubtle),
       ),
       child: Row(
         children: [
-          const Icon(Icons.timer_outlined,
+          Icon(Icons.timer_outlined,
               color: AppTheme.primaryColor, size: 16),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Text(
               session.tag.isNotEmpty ? session.tag : '집중 세션',
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: AppTheme.of(context).textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -663,8 +663,8 @@ class _SessionRow extends StatelessWidget {
           ),
           Text(
             '$timeStr · ${session.actualMinutes}분',
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
+            style: TextStyle(
+              color: AppTheme.of(context).textSecondary,
               fontSize: 12,
             ),
           ),

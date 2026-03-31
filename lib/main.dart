@@ -10,6 +10,7 @@ import 'config/theme.dart';
 import 'config/routes.dart';
 import 'providers/auth_provider.dart';
 import 'providers/focus_provider.dart';
+import 'providers/theme_provider.dart';
 import 'services/ad_service.dart';
 import 'services/notification_service.dart';
 
@@ -60,15 +61,20 @@ class FocusCashApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FocusProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'Focus Cash',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        scrollBehavior: const _NoGlowScrollBehavior(),
-        routes: AppRoutes.routes,
-        onGenerateRoute: AppRoutes.onGenerateRoute,
-        home: const AppStartup(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) => MaterialApp(
+          title: 'Focus Cash',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          scrollBehavior: const _NoGlowScrollBehavior(),
+          routes: AppRoutes.routes,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
+          home: const AppStartup(),
+        ),
       ),
     );
   }
@@ -125,7 +131,7 @@ class _AppStartupState extends State<AppStartup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppTheme.of(context).bg,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

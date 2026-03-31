@@ -17,7 +17,7 @@ class WeeklyChart extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: BarChart(
@@ -26,12 +26,12 @@ class WeeklyChart extends StatelessWidget {
           maxY: maxY > 0 ? maxY * 1.2 : 60,
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => AppTheme.surfaceColor,
+              getTooltipColor: (_) => AppTheme.of(context).surface,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 final minutes = chartData[group.x.toInt()];
                 return BarTooltipItem(
                   '${minutes ~/ 60}시간 ${minutes % 60}분',
-                  const TextStyle(color: AppTheme.textPrimary, fontSize: 12),
+                  TextStyle(color: AppTheme.of(context).textPrimary, fontSize: 12),
                 );
               },
             ),
@@ -48,8 +48,8 @@ class WeeklyChart extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         days[index],
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
+                        style: TextStyle(
+                          color: AppTheme.of(context).textSecondary,
                           fontSize: 12,
                         ),
                       ),

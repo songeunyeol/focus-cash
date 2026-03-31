@@ -4,6 +4,7 @@ import '../../config/constants.dart';
 import '../../config/theme.dart';
 import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/level_frame.dart';
 import '../auth/signup_terms_screen.dart';
 import '../social/friends_screen.dart';
@@ -96,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: AppTheme.elevatedColor,
+                  color: AppTheme.of(context).elevated,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: AppTheme.primaryColor.withValues(alpha: 0.5),
@@ -127,12 +128,12 @@ class ProfileScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: AppTheme.of(context).surface,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppTheme.borderMid),
+                  border: Border.all(color: AppTheme.of(context).borderMid),
                 ),
-                child: const Icon(Icons.edit_rounded,
-                    size: 14, color: AppTheme.textSecondary),
+                child: Icon(Icons.edit_rounded,
+                    size: 14, color: AppTheme.of(context).textSecondary),
               ),
             ),
           ],
@@ -142,9 +143,9 @@ class ProfileScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.of(context).card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.borderSubtle),
+            border: Border.all(color: AppTheme.of(context).borderSubtle),
           ),
           child: Column(
             children: [
@@ -153,8 +154,8 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Lv.$level → Lv.${level + 1}',
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
+                    style: TextStyle(
+                      color: AppTheme.of(context).textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -173,7 +174,7 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: xpProgress,
-                  backgroundColor: AppTheme.surfaceColor,
+                  backgroundColor: AppTheme.of(context).surface,
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     AppTheme.primaryColor,
                   ),
@@ -189,14 +190,14 @@ class ProfileScreen extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: AppTheme.of(context).surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.borderSubtle),
+              border: Border.all(color: AppTheme.of(context).borderSubtle),
             ),
             child: Text(
               user!.phoneNumber,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: AppTheme.of(context).textSecondary,
                 fontSize: 13,
               ),
             ),
@@ -210,7 +211,7 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = context.read<AuthProvider>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: AppTheme.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -224,7 +225,7 @@ class ProfileScreen extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.textMuted,
+                  color: AppTheme.of(context).textMuted,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -257,11 +258,11 @@ class ProfileScreen extends StatelessWidget {
                       duration: const Duration(milliseconds: 150),
                       decoration: BoxDecoration(
                         gradient: selected ? AppTheme.primaryGradient : null,
-                        color: selected ? null : AppTheme.cardColor,
+                        color: selected ? null : AppTheme.of(ctx).card,
                         borderRadius: BorderRadius.circular(14),
                         border: selected
                             ? null
-                            : Border.all(color: AppTheme.borderSubtle),
+                            : Border.all(color: AppTheme.of(ctx).borderSubtle),
                         boxShadow: selected
                             ? [
                                 BoxShadow(
@@ -300,20 +301,20 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        title: const Text('이름 수정',
-            style: TextStyle(color: AppTheme.textPrimary)),
+        backgroundColor: AppTheme.of(context).card,
+        title: Text('이름 수정',
+            style: TextStyle(color: AppTheme.of(context).textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLength: 10,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppTheme.of(context).textPrimary),
+          decoration: InputDecoration(
             hintText: '새 이름 입력 (최대 10자)',
-            hintStyle: TextStyle(color: AppTheme.textSecondary),
-            counterStyle: TextStyle(color: AppTheme.textSecondary),
+            hintStyle: TextStyle(color: AppTheme.of(context).textSecondary),
+            counterStyle: TextStyle(color: AppTheme.of(context).textSecondary),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.textSecondary),
+              borderSide: BorderSide(color: AppTheme.of(context).textSecondary),
             ),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: AppTheme.primaryColor),
@@ -323,8 +324,8 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text('취소',
+                style: TextStyle(color: AppTheme.of(context).textSecondary)),
           ),
           TextButton(
             onPressed: () {
@@ -382,9 +383,9 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderSubtle),
+        border: Border.all(color: AppTheme.of(context).borderSubtle),
       ),
       child: Row(
         children: List.generate(stats.length * 2 - 1, (i) {
@@ -392,7 +393,7 @@ class ProfileScreen extends StatelessWidget {
             return Container(
               width: 1,
               height: 36,
-              color: AppTheme.borderSubtle,
+              color: AppTheme.of(context).borderSubtle,
             );
           }
           final stat = stats[i ~/ 2];
@@ -414,8 +415,8 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   stat['label'] as String,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     fontSize: 10,
                   ),
                 ),
@@ -515,7 +516,7 @@ class ProfileScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
+                  color: AppTheme.of(context).card,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: color.withValues(alpha: 0.25)),
                   boxShadow: [
@@ -545,8 +546,8 @@ class ProfileScreen extends StatelessWidget {
                       children: [
                         Text(
                           item['title'] as String,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.of(context).textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -565,9 +566,9 @@ class ProfileScreen extends StatelessWidget {
         // 기타 설정 - 리스트
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.of(context).card,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.borderSubtle),
+            border: Border.all(color: AppTheme.of(context).borderSubtle),
           ),
           child: Column(
             children: List.generate(listItems.length, (index) {
@@ -580,33 +581,74 @@ class ProfileScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: AppTheme.of(context).surface,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(item['icon'] as IconData,
-                          color: AppTheme.textSecondary, size: 18),
+                          color: AppTheme.of(context).textSecondary, size: 18),
                     ),
                     title: Text(
                       item['title'] as String,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: AppTheme.of(context).textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded,
-                        color: AppTheme.textMuted, size: 20),
+                    trailing: Icon(Icons.chevron_right_rounded,
+                        color: AppTheme.of(context).textMuted, size: 20),
                     onTap: item['onTap'] as VoidCallback,
                   ),
                   if (!isLast)
                     Divider(
                       height: 1,
-                      color: AppTheme.borderSubtle,
+                      color: AppTheme.of(context).borderSubtle,
                       indent: 56,
                     ),
                 ],
               );
             }),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 다크 모드 토글
+        Consumer<ThemeProvider>(
+          builder: (context, themeProvider, _) => Container(
+            decoration: BoxDecoration(
+              color: AppTheme.of(context).card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.of(context).borderSubtle),
+            ),
+            child: SwitchListTile(
+              secondary: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.of(context).surface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  themeProvider.isDark
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                  color: AppTheme.of(context).textSecondary,
+                  size: 18,
+                ),
+              ),
+              title: Text(
+                '다크 모드',
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              value: themeProvider.isDark,
+              onChanged: (_) => themeProvider.toggle(),
+              activeThumbColor: AppTheme.primaryColor,
+              activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.5),
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -642,9 +684,9 @@ class ProfileScreen extends StatelessWidget {
         // 계정 탈퇴
         TextButton(
           onPressed: () => _showDeleteAccountDialog(context),
-          child: const Text(
+          child: Text(
             '계정 탈퇴',
-            style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+            style: TextStyle(color: AppTheme.of(context).textMuted, fontSize: 13),
           ),
         ),
         const SizedBox(height: 32),
@@ -657,7 +699,7 @@ class ProfileScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: AppTheme.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -673,7 +715,7 @@ class ProfileScreen extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: AppTheme.textMuted,
+                color: AppTheme.of(context).textMuted,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -681,8 +723,8 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -696,8 +738,8 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   content,
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                  style: TextStyle(
+                    color: AppTheme.of(context).textSecondary,
                     fontSize: 14,
                     height: 1.6,
                   ),
@@ -729,21 +771,21 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        title: const Text(
+        backgroundColor: AppTheme.of(context).card,
+        title: Text(
           '계정 탈퇴',
-          style: TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: AppTheme.of(context).textPrimary),
         ),
-        content: const Text(
+        content: Text(
           '탈퇴하면 모든 크레딧과 집중 기록이 삭제되며\n복구할 수 없습니다.\n\n정말 탈퇴하시겠습니까?',
-          style: TextStyle(color: AppTheme.textSecondary, height: 1.5),
+          style: TextStyle(color: AppTheme.of(context).textSecondary, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               '취소',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.of(context).textSecondary),
             ),
           ),
           TextButton(

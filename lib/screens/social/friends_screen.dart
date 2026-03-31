@@ -174,12 +174,12 @@ class _FriendsScreenState extends State<FriendsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('친구'),
+        title: Text('친구'),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.primaryColor,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: AppTheme.of(context).textSecondary,
           tabs: [
             const Tab(text: '친구'),
             Tab(
@@ -254,34 +254,34 @@ class _FriendsScreenState extends State<FriendsScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.card_giftcard,
+              Icon(Icons.card_giftcard,
                   color: AppTheme.creditGold, size: 20),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 '내 초대 코드',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                style: TextStyle(color: AppTheme.of(context).textSecondary, fontSize: 13),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Row(
             children: [
               Text(
                 code,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 4,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               IconButton(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: code));
                   _toast(context, '초대 코드가 복사되었습니다!', type: _ToastType.info);
                 },
-                icon: const Icon(Icons.copy, color: AppTheme.textSecondary),
+                icon: Icon(Icons.copy, color: AppTheme.of(context).textSecondary),
                 tooltip: '코드 복사',
               ),
               IconButton(
@@ -314,21 +314,21 @@ class _FriendsScreenState extends State<FriendsScreen>
       children: [
         Text(
           '친구 ${_friends.length}명',
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: AppTheme.of(context).textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         if (_friends.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 32),
             child: Center(
               child: Text(
                 '아직 친구가 없어요.\n찾기 탭에서 친구를 추가해보세요!',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.of(context).textSecondary),
               ),
             ),
           )
@@ -345,10 +345,10 @@ class _FriendsScreenState extends State<FriendsScreen>
   // ── 요청 탭 ───────────────────────────────────────────────
   Widget _buildRequestsTab(String myUid) {
     if (_pendingRequests.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           '받은 친구 요청이 없어요.',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.of(context).textSecondary),
         ),
       );
     }
@@ -358,8 +358,8 @@ class _FriendsScreenState extends State<FriendsScreen>
       children: [
         Text(
           '받은 친구 요청 ${_pendingRequests.length}건',
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: AppTheme.of(context).textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -395,7 +395,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                     decoration: BoxDecoration(
                       color: _searchMode == 'name'
                           ? AppTheme.primaryColor
-                          : AppTheme.surfaceColor,
+                          : AppTheme.of(context).surface,
                       borderRadius: const BorderRadius.horizontal(
                           left: Radius.circular(10)),
                     ),
@@ -405,7 +405,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                         style: TextStyle(
                           color: _searchMode == 'name'
                               ? Colors.white
-                              : AppTheme.textSecondary,
+                              : AppTheme.of(context).textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -425,7 +425,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                     decoration: BoxDecoration(
                       color: _searchMode == 'code'
                           ? AppTheme.primaryColor
-                          : AppTheme.surfaceColor,
+                          : AppTheme.of(context).surface,
                       borderRadius: const BorderRadius.horizontal(
                           right: Radius.circular(10)),
                     ),
@@ -435,7 +435,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                         style: TextStyle(
                           color: _searchMode == 'code'
                               ? Colors.white
-                              : AppTheme.textSecondary,
+                              : AppTheme.of(context).textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -445,27 +445,27 @@ class _FriendsScreenState extends State<FriendsScreen>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _searchController,
                   onSubmitted: (_) => _search(),
-                  style: const TextStyle(color: AppTheme.textPrimary),
+                  style: TextStyle(color: AppTheme.of(context).textPrimary),
                   decoration: InputDecoration(
                     hintText:
                         _searchMode == 'code' ? '초대 코드 8자리 입력' : '닉네임 검색',
                     hintStyle:
-                        const TextStyle(color: AppTheme.textSecondary),
+                        TextStyle(color: AppTheme.of(context).textSecondary),
                     filled: true,
-                    fillColor: AppTheme.surfaceColor,
+                    fillColor: AppTheme.of(context).surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.search,
-                        color: AppTheme.textSecondary),
+                    prefixIcon: Icon(Icons.search,
+                        color: AppTheme.of(context).textSecondary),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
                   ),
@@ -500,7 +500,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                           ? '검색어를 입력해주세요'
                           : '검색 결과가 없습니다',
                       style:
-                          const TextStyle(color: AppTheme.textSecondary),
+                          TextStyle(color: AppTheme.of(context).textSecondary),
                     ),
                   )
                 : ListView.builder(
@@ -567,7 +567,7 @@ class _PendingRequestTileState extends State<_PendingRequestTile> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(12),
         border:
             Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
@@ -577,13 +577,13 @@ class _PendingRequestTileState extends State<_PendingRequestTile> {
           CircleAvatar(
             backgroundColor: AppTheme.primaryColor.withAlpha(50),
             child: Text(AppConstants.avatarEmojis[avatarIdx],
-                style: const TextStyle(fontSize: 20)),
+                style: TextStyle(fontSize: 20)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Text(name,
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                style: TextStyle(
+                    color: AppTheme.of(context).textPrimary,
                     fontWeight: FontWeight.w600)),
           ),
           TextButton(
@@ -594,7 +594,7 @@ class _PendingRequestTileState extends State<_PendingRequestTile> {
               _toast(context, '친구 요청을 거절했습니다.', type: _ToastType.cancel);
             },
             style:
-                TextButton.styleFrom(foregroundColor: AppTheme.textSecondary),
+                TextButton.styleFrom(foregroundColor: AppTheme.of(context).textSecondary),
             child: const Text('거절'),
           ),
           const SizedBox(width: 4),
@@ -641,7 +641,7 @@ class _FriendTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -651,24 +651,24 @@ class _FriendTile extends StatelessWidget {
             child: Text(AppConstants.avatarEmojis[avatarIdx],
                 style: const TextStyle(fontSize: 20)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name,
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                    style: TextStyle(
+                        color: AppTheme.of(context).textPrimary,
                         fontWeight: FontWeight.w600)),
                 Text('${friend.currentStreak}일 연속 집중',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12)),
+                    style: TextStyle(
+                        color: AppTheme.of(context).textSecondary, fontSize: 12)),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.person_remove_outlined,
-                color: AppTheme.textSecondary, size: 20),
+            icon: Icon(Icons.person_remove_outlined,
+                color: AppTheme.of(context).textSecondary, size: 20),
             onPressed: () => _confirmRemove(context),
             tooltip: '친구 삭제',
           ),
@@ -683,18 +683,18 @@ class _FriendTile extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
-        title: const Text('친구 삭제',
-            style: TextStyle(color: AppTheme.textPrimary)),
+        backgroundColor: AppTheme.of(context).card,
+        title: Text('친구 삭제',
+            style: TextStyle(color: AppTheme.of(context).textPrimary)),
         content: Text(
           '$displayName님을 친구 목록에서 삭제하시겠어요?',
-          style: const TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.of(context).textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text('취소',
+                style: TextStyle(color: AppTheme.of(context).textSecondary)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -739,7 +739,7 @@ class _SearchResultTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: AppTheme.of(context).card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -757,21 +757,21 @@ class _SearchResultTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(name,
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                        style: TextStyle(
+                            color: AppTheme.of(context).textPrimary,
                             fontWeight: FontWeight.w600)),
                     if (isMe) ...[
                       const SizedBox(width: 6),
                       _badge('나', AppTheme.primaryColor),
                     ] else if (isFriend) ...[
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       _badge('친구', AppTheme.accentGreen),
                     ],
                   ],
                 ),
                 Text('${user.currentStreak}일 연속 집중',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12)),
+                    style: TextStyle(
+                        color: AppTheme.of(context).textSecondary, fontSize: 12)),
               ],
             ),
           ),
@@ -804,21 +804,21 @@ class _SearchResultTile extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: AppTheme.of(context).surface,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: AppTheme.textSecondary.withValues(alpha: 0.4)),
+                      color: AppTheme.of(context).textSecondary.withValues(alpha: 0.4)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.hourglass_top,
-                        size: 13, color: AppTheme.textSecondary),
+                        size: 13, color: AppTheme.of(context).textSecondary),
                     SizedBox(width: 4),
                     Text(
                       '대기중',
                       style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.of(context).textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600),
                     ),

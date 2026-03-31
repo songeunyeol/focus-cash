@@ -100,12 +100,12 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
                             ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'Focus Cash 가입을 완료했어요.\n지금 바로 집중 타이머를 시작해보세요!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.of(context).textSecondary,
                         fontSize: 15,
                         height: 1.6,
                       ),
