@@ -1,0 +1,66 @@
+name: focus_cash
+description: "Focus Cash - Study Timer with Credit Rewards"
+publish_to: 'none'
+version: 1.0.0+2
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.1
+  cloud_firestore: ^5.6.5
+  firebase_storage: ^12.4.4
+  firebase_messaging: ^15.2.4
+  firebase_analytics: ^11.4.4
+
+  # Social Login
+  google_sign_in: ^6.2.2
+  kakao_flutter_sdk_user: ^1.9.6
+
+  # State Management
+  provider: ^6.1.4
+
+  # Local Storage
+  shared_preferences: ^2.5.3
+
+  # UI
+  fl_chart: ^1.0.0
+  percent_indicator: ^4.2.5
+
+  # Ads
+  google_mobile_ads: ^5.3.0
+
+  # Utils
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  http: ^1.2.2
+  share_plus: ^10.1.2
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  web:
+    generate: false
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

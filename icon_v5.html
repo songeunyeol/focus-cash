@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Cash — icon v5</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #07070f;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      color: #fff;
+      padding: 56px 48px;
+    }
+    h1 { font-size: 18px; font-weight: 700; color: #ddd; margin-bottom: 6px; }
+    .sub { color: #444; font-size: 13px; margin-bottom: 52px; }
+
+    .section { margin-bottom: 72px; }
+    .section-title { font-size: 11px; font-weight: 700; color: #333; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 28px; }
+
+    .row { display: flex; gap: 44px; flex-wrap: wrap; align-items: flex-end; }
+    .icon-wrap {
+      border-radius: 22.5%;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.08),
+        0 12px 40px rgba(0,0,0,0.9),
+        0 32px 80px rgba(0,0,0,0.6),
+        0 0 80px rgba(6,182,212,0.07);
+    }
+    .label { font-size: 11px; color: #3a3a4a; text-align: center; margin-top: 10px; }
+    .col { display: flex; flex-direction: column; align-items: center; }
+
+    /* 홈 화면 목업 */
+    .mockup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .mockup-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.6);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .phone-screen {
+      width: 280px;
+      height: 420px;
+      border-radius: 36px;
+      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.08);
+      padding: 20px;
+    }
+    /* 배경 앱들 (더미) */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .dummy-app {
+      width: 52px;
+      height: 52px;
+      border-radius: 13px;
+      opacity: 0.35;
+    }
+    .focus-app {
+      width: 52px;
+      height: 52px;
+      border-radius: 13px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(6,182,212,0.4), 0 8px 24px rgba(0,0,0,0.5);
+      transform: scale(1.08);
+    }
+    .feedback-box {
+      margin-top: 40px;
+      padding: 22px 26px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      max-width: 560px;
+      line-height: 1.9;
+      font-size: 13px;
+      color: #666;
+    }
+    .feedback-box strong { color: #aaa; }
+    .feedback-box .good { color: #06B6D4; }
+    .feedback-box .tip  { color: #A78BFA; }
+  </style>
+</head>
+<body>
+
+<h1>Focus Cash — v5</h1>
+<p class="sub">불꽃이 아이콘을 채우는 구조 · 하단 빈공간 해소</p>
+
+<div class="section">
+  <div class="section-title">완성 아이콘</div>
+  <div class="row">
+
+    <!-- ── 200px 대표 ── -->
+    <div class="col">
+      <div class="icon-wrap" style="width:200px;height:200px;">
+        <svg width="200" height="200" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+
+            <!-- 배경: 바닥에서 올라오는 깊은 인디고 -->
+            <radialGradient id="bg" cx="50%" cy="85%">
+              <stop offset="0%"   stop-color="#1e1850"/>
+              <stop offset="40%"  stop-color="#120f30"/>
+              <stop offset="100%" stop-color="#070610"/>
+            </radialGradient>
+
+            <!-- 링 그라디언트 -->
+            <linearGradient id="ringG" x1="20%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%"   stop-color="#22d3ee"/>
+              <stop offset="45%"  stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#4f46e5"/>
+            </linearGradient>
+            <linearGradient id="ringG2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#4f46e5"/>
+              <stop offset="100%" stop-color="#6d28d9" stop-opacity="0.5"/>
+            </linearGradient>
+
+            <!-- 불꽃 레이어 1: 가장 바깥 (넓고 차분한 퍼플~시안) -->
+            <radialGradient id="fl1" cx="50%" cy="75%" r="55%">
+              <stop offset="0%"   stop-color="#4338ca"/>
+              <stop offset="40%"  stop-color="#3730a3" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="fl1v" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"   stop-color="#312e81" stop-opacity="0.9"/>
+              <stop offset="20%"  stop-color="#4338ca"/>
+              <stop offset="50%"  stop-color="#4f46e5" stop-opacity="0.85"/>
+              <stop offset="75%"  stop-color="#06b6d4" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.3"/>
+            </linearGradient>
+
+            <!-- 불꽃 레이어 2: 중간 바디 (시안) -->
+            <linearGradient id="fl2" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"   stop-color="#1d4ed8"/>
+              <stop offset="25%"  stop-color="#0891b2"/>
+              <stop offset="55%"  stop-color="#06b6d4"/>
+              <stop offset="80%"  stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+
+            <!-- 불꽃 레이어 3: 이너 코어 -->
+            <linearGradient id="fl3" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"   stop-color="#0284c7"/>
+              <stop offset="40%"  stop-color="#38bdf8"/>
+              <stop offset="75%"  stop-color="#bae6fd"/>
+              <stop offset="100%" stop-color="#ffffff"/>
+            </linearGradient>
+
+            <!-- 베이스 글로우 -->
+            <radialGradient id="baseG" cx="50%" cy="100%">
+              <stop offset="0%"   stop-color="#4f46e5" stop-opacity="0.5"/>
+              <stop offset="45%"  stop-color="#1d4ed8" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+            <radialGradient id="baseG2" cx="50%" cy="100%">
+              <stop offset="0%"   stop-color="#06b6d4" stop-opacity="0.3"/>
+              <stop offset="60%"  stop-color="transparent"/>
+            </radialGradient>
+
+            <!-- 원판 광택 -->
+            <radialGradient id="shine" cx="35%" cy="22%">
+              <stop offset="0%"  stop-color="rgba(255,255,255,0.07)"/>
+              <stop offset="60%" stop-color="rgba(255,255,255,0)"/>
+            </radialGradient>
+
+            <!-- 필터 -->
+            <filter id="fOuter" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="16" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fMid" x="-25%" y="-25%" width="150%" height="150%">
+              <feGaussianBlur stdDeviation="8" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fCore" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="20" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fAmb">
+              <feGaussianBlur stdDeviation="35"/>
+            </filter>
+            <filter id="fRing" x="-10%" y="-10%" width="120%" height="120%">
+              <feGaussianBlur stdDeviation="4" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fBase" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="22" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+
+          </defs>
+
+          <!-- ── 배경 ── -->
+          <rect width="512" height="512" fill="url(#bg)"/>
+
+          <!-- ── 배경 ambient ── -->
+          <ellipse cx="256" cy="420" rx="200" ry="120" fill="rgba(79,70,229,0.28)"  filter="url(#fAmb)"/>
+          <ellipse cx="256" cy="280" rx="150" ry="200" fill="rgba(6,182,212,0.12)" filter="url(#fAmb)"/>
+
+          <!-- ── 링 ── -->
+          <!-- 링 트랙 -->
+          <circle cx="256" cy="256" r="224" fill="none"
+            stroke="rgba(255,255,255,0.04)" stroke-width="22"/>
+          <!-- 링 A 상단 (~68%) -->
+          <circle cx="256" cy="256" r="224" fill="none"
+            stroke="url(#ringG)" stroke-width="13"
+            stroke-linecap="round"
+            stroke-dasharray="956 452"
+            stroke-dashoffset="452"
+            transform="rotate(-12 256 256)"
+            filter="url(#fRing)"/>
+          <!-- 링 B 하단 (~18%, 희미) -->
+          <circle cx="256" cy="256" r="224" fill="none"
+            stroke="url(#ringG2)" stroke-width="9"
+            stroke-linecap="round"
+            stroke-dasharray="240 1168"
+            stroke-dashoffset="-364"
+            transform="rotate(-12 256 256)"
+            opacity="0.38"/>
+
+          <!-- ── 내부 원판 ── -->
+          <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+          <circle cx="256" cy="256" r="192" fill="none"
+            stroke="rgba(79,70,229,0.18)" stroke-width="1.5"/>
+
+          <!-- ── 눈금 (4개, 거의 안 보이게 차분히) ── -->
+          <g stroke="rgba(79,70,229,0.35)" stroke-width="4" stroke-linecap="round">
+            <line x1="256" y1="68"  x2="256" y2="86"/>
+            <line x1="256" y1="426" x2="256" y2="444"/>
+            <line x1="68"  y1="256" x2="86"  y2="256"/>
+            <line x1="426" y1="256" x2="444" y2="256"/>
+          </g>
+
+          <!-- ══════════ 불꽃 (원판 바닥에서 솟아오름) ══════════ -->
+
+          <!-- 베이스 글로우 풀 (하단 채움) -->
+          <ellipse cx="256" cy="420" rx="160" ry="55"
+            fill="url(#baseG)" filter="url(#fBase)"/>
+          <ellipse cx="256" cy="415" rx="100" ry="38"
+            fill="url(#baseG2)" filter="url(#fBase)"/>
+
+          <!-- 레이어 1: 가장 넓은 외곽 불꽃 -->
+          <!-- 바닥이 원판 하단(~430)에서 시작, 위로 퍼짐 -->
+          <path d="
+            M 256 432
+            C 210 428, 158 406, 138 366
+            C 118 326, 126 284, 138 250
+            C 148 220, 162 196, 174 166
+            C 186 136, 198 106, 210 82
+            C 228 58, 244 48, 256 44
+            C 268 48, 284 58, 302 82
+            C 314 106, 326 136, 338 166
+            C 350 196, 364 220, 374 250
+            C 386 284, 394 326, 374 366
+            C 354 406, 302 428, 256 432
+            Z"
+            fill="url(#fl1v)"
+            filter="url(#fOuter)"
+            opacity="0.72"/>
+
+          <!-- 레이어 2: 중간 바디 (시안 메인) -->
+          <path d="
+            M 256 418
+            C 218 414, 180 396, 168 362
+            C 154 326, 162 290, 174 258
+            C 184 230, 198 204, 210 176
+            C 222 148, 234 118, 242 92
+            C 248 72, 254 58, 256 52
+            C 258 58, 264 72, 270 92
+            C 278 118, 290 148, 302 176
+            C 314 204, 328 230, 338 258
+            C 350 290, 358 326, 344 362
+            C 332 396, 294 414, 256 418
+            Z"
+            fill="url(#fl2)"
+            filter="url(#fMid)"
+            opacity="0.88"/>
+
+          <!-- 레이어 3: 코어 (가장 밝음) -->
+          <path d="
+            M 256 400
+            C 230 396, 208 380, 204 352
+            C 198 322, 208 294, 218 266
+            C 226 242, 236 216, 242 188
+            C 248 160, 252 130, 254 104
+            C 255 88, 256 74, 256 66
+            C 256 74, 257 88, 258 104
+            C 260 130, 264 160, 270 188
+            C 276 216, 286 242, 294 266
+            C 304 294, 314 322, 308 352
+            C 304 380, 282 396, 256 400
+            Z"
+            fill="url(#fl3)"
+            filter="url(#fCore)"
+            opacity="0.94"/>
+
+          <!-- 팁: 가장 밝은 흰 코어 -->
+          <ellipse cx="256" cy="78"
+            rx="12" ry="20"
+            fill="white"
+            filter="url(#fCore)"
+            opacity="0.9"/>
+
+          <!-- 원판 광택 -->
+          <circle cx="256" cy="256" r="192" fill="url(#shine)"/>
+
+          <!-- 링 시작 dot -->
+          <circle cx="256" cy="34" r="8"
+            fill="#22d3ee" opacity="0.85" filter="url(#fRing)"/>
+
+        </svg>
+      </div>
+      <div class="label">200 px</div>
+    </div>
+
+    <!-- 128px -->
+    <div class="col">
+      <div class="icon-wrap" style="width:128px;height:128px;">
+        <svg width="128" height="128" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="bg2" cx="50%" cy="85%">
+              <stop offset="0%"  stop-color="#1e1850"/>
+              <stop offset="100%" stop-color="#070610"/>
+            </radialGradient>
+            <linearGradient id="rg2" x1="20%" y1="0%" x2="80%" y2="100%">
+              <stop offset="0%"  stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#4f46e5"/>
+            </linearGradient>
+            <linearGradient id="f12" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#312e81" stop-opacity="0.9"/>
+              <stop offset="25%" stop-color="#4338ca"/>
+              <stop offset="55%" stop-color="#4f46e5" stop-opacity="0.85"/>
+              <stop offset="80%" stop-color="#06b6d4" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.3"/>
+            </linearGradient>
+            <linearGradient id="f22" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#1d4ed8"/>
+              <stop offset="30%" stop-color="#0891b2"/>
+              <stop offset="65%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+            <linearGradient id="f32" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#0284c7"/>
+              <stop offset="45%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="white"/>
+            </linearGradient>
+            <radialGradient id="bg2" cx="50%" cy="85%">
+              <stop offset="0%"  stop-color="#1e1850"/>
+              <stop offset="100%" stop-color="#070610"/>
+            </radialGradient>
+            <filter id="fo2">
+              <feGaussianBlur stdDeviation="15" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fm2">
+              <feGaussianBlur stdDeviation="7" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fc2">
+              <feGaussianBlur stdDeviation="20" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="fa2"><feGaussianBlur stdDeviation="34"/></filter>
+          </defs>
+          <rect width="512" height="512" fill="#0d0b1e"/>
+          <ellipse cx="256" cy="420" rx="200" ry="120" fill="rgba(79,70,229,0.28)" filter="url(#fa2)"/>
+          <ellipse cx="256" cy="280" rx="150" ry="200" fill="rgba(6,182,212,0.12)" filter="url(#fa2)"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="22"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="url(#rg2)" stroke-width="13"
+            stroke-linecap="round" stroke-dasharray="956 452" stroke-dashoffset="452" transform="rotate(-12 256 256)"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="#6d28d9" stroke-width="9"
+            stroke-dasharray="240 1168" stroke-dashoffset="-364" transform="rotate(-12 256 256)" opacity="0.35"/>
+          <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+          <circle cx="256" cy="256" r="192" fill="none" stroke="rgba(79,70,229,0.18)" stroke-width="1.5"/>
+          <g stroke="rgba(79,70,229,0.35)" stroke-width="4" stroke-linecap="round">
+            <line x1="256" y1="68" x2="256" y2="86"/>
+            <line x1="256" y1="426" x2="256" y2="444"/>
+            <line x1="68" y1="256" x2="86" y2="256"/>
+            <line x1="426" y1="256" x2="444" y2="256"/>
+          </g>
+          <ellipse cx="256" cy="420" rx="160" ry="55" fill="rgba(79,70,229,0.4)" filter="url(#fa2)"/>
+          <!-- 불꽃 레이어 1 -->
+          <path d="M 256 432 C 210 428 158 406 138 366 C 118 326 126 284 138 250 C 148 220 162 196 174 166 C 186 136 198 106 210 82 C 228 58 244 48 256 44 C 268 48 284 58 302 82 C 314 106 326 136 338 166 C 350 196 364 220 374 250 C 386 284 394 326 374 366 C 354 406 302 428 256 432 Z"
+            fill="url(#f12)" filter="url(#fo2)" opacity="0.72"/>
+          <!-- 불꽃 레이어 2 -->
+          <path d="M 256 418 C 218 414 180 396 168 362 C 154 326 162 290 174 258 C 184 230 198 204 210 176 C 222 148 234 118 242 92 C 248 72 254 58 256 52 C 258 58 264 72 270 92 C 278 118 290 148 302 176 C 314 204 328 230 338 258 C 350 290 358 326 344 362 C 332 396 294 414 256 418 Z"
+            fill="url(#f22)" filter="url(#fm2)" opacity="0.88"/>
+          <!-- 불꽃 코어 -->
+          <path d="M 256 400 C 230 396 208 380 204 352 C 198 322 208 294 218 266 C 226 242 236 216 242 188 C 248 160 252 130 254 104 C 255 88 256 74 256 66 C 256 74 257 88 258 104 C 260 130 264 160 270 188 C 276 216 286 242 294 266 C 304 294 314 322 308 352 C 304 380 282 396 256 400 Z"
+            fill="url(#f32)" filter="url(#fc2)" opacity="0.94"/>
+          <ellipse cx="256" cy="78" rx="12" ry="20" fill="white" filter="url(#fc2)" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="label">128 px</div>
+    </div>
+
+    <!-- 64px -->
+    <div class="col">
+      <div class="icon-wrap" style="width:64px;height:64px;">
+        <svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="f1s" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#312e81"/>
+              <stop offset="35%" stop-color="#4338ca"/>
+              <stop offset="70%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.5"/>
+            </linearGradient>
+            <linearGradient id="f2s" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#1d4ed8"/>
+              <stop offset="55%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" fill="#0d0b1e"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="#06b6d4" stroke-width="14"
+            stroke-linecap="round" stroke-dasharray="956 452" stroke-dashoffset="452" transform="rotate(-12 256 256)"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="#6d28d9" stroke-width="9"
+            stroke-dasharray="240 1168" stroke-dashoffset="-364" transform="rotate(-12 256 256)" opacity="0.35"/>
+          <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+          <path d="M 256 432 C 158 406 118 326 138 250 C 148 220 162 196 174 166 C 186 136 210 82 256 44 C 302 82 326 136 338 166 C 350 196 364 220 374 250 C 394 326 354 406 256 432 Z"
+            fill="url(#f1s)" opacity="0.75"/>
+          <path d="M 256 418 C 168 362 154 290 174 258 C 198 204 234 118 256 52 C 278 118 314 204 338 258 C 358 290 344 362 256 418 Z"
+            fill="url(#f2s)" opacity="0.9"/>
+          <ellipse cx="256" cy="80" rx="14" ry="22" fill="white" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="label">64 px</div>
+    </div>
+
+    <!-- 40px -->
+    <div class="col">
+      <div class="icon-wrap" style="width:40px;height:40px;">
+        <svg width="40" height="40" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="f1t" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%"  stop-color="#312e81"/>
+              <stop offset="50%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#bae6fd"/>
+            </linearGradient>
+          </defs>
+          <rect width="512" height="512" fill="#0d0b1e"/>
+          <circle cx="256" cy="256" r="224" fill="none" stroke="#06b6d4" stroke-width="18"
+            stroke-linecap="round" stroke-dasharray="956 452" stroke-dashoffset="452" transform="rotate(-12 256 256)"/>
+          <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+          <path d="M 256 432 C 158 406 118 320 148 240 C 170 180 220 100 256 44 C 292 100 342 180 364 240 C 394 320 354 406 256 432 Z"
+            fill="url(#f1t)" opacity="0.92"/>
+          <ellipse cx="256" cy="80" rx="15" ry="24" fill="white" opacity="0.88"/>
+        </svg>
+      </div>
+      <div class="label">40 px</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 홈 화면 목업 -->
+<div class="section">
+  <div class="section-title">홈 화면에서 보이는 모습</div>
+  <div class="row" style="align-items:flex-start;">
+
+    <!-- 다크 배경 -->
+    <div class="mockup">
+      <div class="phone-screen">
+        <div style="display:flex;justify-content:space-between;align-items:center;opacity:0.4;">
+          <div style="font-size:11px;">9:41</div>
+          <div style="font-size:9px;">●●●</div>
+        </div>
+        <div class="app-grid">
+          <!-- 더미 앱들 -->
+          <div class="dummy-app" style="background:linear-gradient(135deg,#1da1f2,#0077b5);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#ff6b35,#ee0979);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#56ab2f,#a8e063);"></div>
+          <!-- Focus Cash -->
+          <div class="focus-app">
+            <svg width="52" height="52" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="f1m" x1="50%" y1="100%" x2="50%" y2="0%">
+                  <stop offset="0%" stop-color="#312e81"/>
+                  <stop offset="40%" stop-color="#4338ca"/>
+                  <stop offset="70%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.5"/>
+                </linearGradient>
+                <linearGradient id="f2m" x1="50%" y1="100%" x2="50%" y2="0%">
+                  <stop offset="0%" stop-color="#1d4ed8"/>
+                  <stop offset="55%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#e0f2fe"/>
+                </linearGradient>
+              </defs>
+              <rect width="512" height="512" fill="#0d0b1e"/>
+              <circle cx="256" cy="256" r="224" fill="none" stroke="#06b6d4" stroke-width="14"
+                stroke-linecap="round" stroke-dasharray="956 452" stroke-dashoffset="452" transform="rotate(-12 256 256)"/>
+              <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+              <path d="M 256 432 C 158 406 118 326 138 250 C 148 220 162 196 174 166 C 186 136 210 82 256 44 C 302 82 326 136 338 166 C 350 196 364 220 374 250 C 394 326 354 406 256 432 Z"
+                fill="url(#f1m)" opacity="0.75"/>
+              <path d="M 256 418 C 168 362 154 290 174 258 C 198 204 234 118 256 52 C 278 118 314 204 338 258 C 358 290 344 362 256 418 Z"
+                fill="url(#f2m)" opacity="0.9"/>
+              <ellipse cx="256" cy="80" rx="14" ry="22" fill="white" opacity="0.85"/>
+            </svg>
+          </div>
+          <!-- 더미 앱들 -->
+          <div class="dummy-app" style="background:linear-gradient(135deg,#f7971e,#ffd200);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#8e44ad,#3498db);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#11998e,#38ef7d);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#c0392b,#e74c3c);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#2c3e50,#34495e);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#fd79a8,#e17055);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#00b894,#00cec9);"></div>
+        </div>
+        <!-- 앱 이름 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px;padding:0 1px;">
+          <div style="font-size:8px;color:rgba(255,255,255,0.5);text-align:center;">Twitter</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.5);text-align:center;">Maps</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.5);text-align:center;">Health</div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.7);text-align:center;font-weight:600;">Focus Cash</div>
+        </div>
+      </div>
+      <div class="label" style="color:#555;">다크 배경</div>
+    </div>
+
+    <!-- 라이트 배경 -->
+    <div class="mockup">
+      <div class="phone-screen" style="background:linear-gradient(145deg,#e8eaf6 0%,#c5cae9 50%,#9fa8da 100%);">
+        <div style="display:flex;justify-content:space-between;align-items:center;opacity:0.5;">
+          <div style="font-size:11px;color:#333;">9:41</div>
+          <div style="font-size:9px;color:#333;">●●●</div>
+        </div>
+        <div class="app-grid">
+          <div class="dummy-app" style="background:linear-gradient(135deg,#1da1f2,#0077b5);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#ff6b35,#ee0979);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#56ab2f,#a8e063);"></div>
+          <div class="focus-app">
+            <svg width="52" height="52" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="f1l" x1="50%" y1="100%" x2="50%" y2="0%">
+                  <stop offset="0%" stop-color="#312e81"/>
+                  <stop offset="40%" stop-color="#4338ca"/>
+                  <stop offset="70%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.5"/>
+                </linearGradient>
+                <linearGradient id="f2l" x1="50%" y1="100%" x2="50%" y2="0%">
+                  <stop offset="0%" stop-color="#1d4ed8"/>
+                  <stop offset="55%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#e0f2fe"/>
+                </linearGradient>
+              </defs>
+              <rect width="512" height="512" fill="#0d0b1e"/>
+              <circle cx="256" cy="256" r="224" fill="none" stroke="#06b6d4" stroke-width="14"
+                stroke-linecap="round" stroke-dasharray="956 452" stroke-dashoffset="452" transform="rotate(-12 256 256)"/>
+              <circle cx="256" cy="256" r="192" fill="#0e0c22"/>
+              <path d="M 256 432 C 158 406 118 326 138 250 C 148 220 162 196 174 166 C 186 136 210 82 256 44 C 302 82 326 136 338 166 C 350 196 364 220 374 250 C 394 326 354 406 256 432 Z"
+                fill="url(#f1l)" opacity="0.75"/>
+              <path d="M 256 418 C 168 362 154 290 174 258 C 198 204 234 118 256 52 C 278 118 314 204 338 258 C 358 290 344 362 256 418 Z"
+                fill="url(#f2l)" opacity="0.9"/>
+              <ellipse cx="256" cy="80" rx="14" ry="22" fill="white" opacity="0.85"/>
+            </svg>
+          </div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#f7971e,#ffd200);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#8e44ad,#3498db);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#11998e,#38ef7d);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#c0392b,#e74c3c);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#2c3e50,#34495e);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#fd79a8,#e17055);"></div>
+          <div class="dummy-app" style="background:linear-gradient(135deg,#00b894,#00cec9);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px;padding:0 1px;">
+          <div style="font-size:8px;color:rgba(0,0,0,0.4);text-align:center;">Twitter</div>
+          <div style="font-size:8px;color:rgba(0,0,0,0.4);text-align:center;">Maps</div>
+          <div style="font-size:8px;color:rgba(0,0,0,0.4);text-align:center;">Health</div>
+          <div style="font-size:8px;color:rgba(0,0,0,0.65);text-align:center;font-weight:600;">Focus Cash</div>
+        </div>
+      </div>
+      <div class="label" style="color:#555;">라이트 배경</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 디자인 피드백 -->
+<div class="feedback-box">
+  <strong>이번 변경 포인트</strong><br>
+  <span class="good">✓ 불꽃 바닥이 원판 하단(y≈430)에서 시작</span> — 빈 공간을 베이스 글로우가 채워 자연스럽게 연결됨<br>
+  <span class="good">✓ 불꽃이 좌우로도 넓게 퍼짐</span> — 원판의 60~70% 폭을 차지해 꽉 찬 느낌<br>
+  <span class="good">✓ 3레이어 구조 유지</span> — 퍼플(외곽) → 시안(메인) → 흰팁(코어), 자연스러운 깊이감<br>
+  <span class="tip">→ 추가 조정 원하시면</span> 불꽃 폭/높이 비율, 링 굵기, 배경 밝기 조절 가능
+</div>
+
+</body>
+</html>

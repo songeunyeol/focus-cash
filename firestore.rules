@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── users ────────────────────────────────────────────────────
+    // 모든 인증 유저 읽기 (랭킹·친구 검색), 본인만 쓰기
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── focus_sessions ───────────────────────────────────────────
+    // 모든 인증 유저 읽기 (글로벌 랭킹), 본인 세션만 쓰기
+    match /focus_sessions/{sessionId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+          && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null
+          && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null
+          && resource.data.userId == request.auth.uid;
+    }
+
+    // ── credit_transactions ──────────────────────────────────────
+    // 본인 거래 내역만 읽기/쓰기
+    match /credit_transactions/{txId} {
+      allow read: if request.auth != null
+          && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+          && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null
+          && resource.data.userId == request.auth.uid;
+    }
+
+    // ── friend_requests ──────────────────────────────────────────
+    // 자신이 보내거나 받은 요청만 읽기/수정/삭제
+    // create: 내가 보낸 요청만
+    match /friend_requests/{requestId} {
+      allow read: if request.auth != null && (
+          resource.data.from == request.auth.uid ||
+          resource.data.to   == request.auth.uid
+      );
+      allow create: if request.auth != null
+          && request.resource.data.from == request.auth.uid;
+      allow update: if request.auth != null && (
+          resource.data.from == request.auth.uid ||
+          resource.data.to   == request.auth.uid
+      );
+      allow delete: if request.auth != null && (
+          resource.data.from == request.auth.uid ||
+          resource.data.to   == request.auth.uid
+      );
+    }
+
+    // ── gifticon_codes ───────────────────────────────────────────
+    // 읽기: 인증 유저 전체 (재고 확인·교환)
+    // 수정: 인증 유저 허용 (교환 트랜잭션이 isUsed 업데이트)
+    // 생성·삭제: 관리자 앱(anonymous)만
+    match /gifticon_codes/{codeId} {
+      allow read: if request.auth != null;
+      allow update: if request.auth != null;
+      allow create, delete: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // ── store_items ──────────────────────────────────────────────
+    // 읽기: 인증 유저 모두 | 쓰기: 관리자 앱(anonymous)만
+    match /store_items/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // ── raffle_rooms ─────────────────────────────────────────────
+    // 읽기: 인증 유저 모두 | 쓰기: 관리자 앱(anonymous)만
+    match /raffle_rooms/{roomId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // ── raffle_entries ───────────────────────────────────────────
+    // 읽기 모두 (방별 응모 수 표시), 쓰기는 본인만
+    match /raffle_entries/{entryId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+          && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── roulette_config ──────────────────────────────────────────
+    // 읽기: 인증 유저 모두 | 쓰기: 관리자 앱(anonymous)만
+    match /roulette_config/{configId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+          && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // ── user_notes ───────────────────────────────────────────────
+    // 캘린더 메모: 본인 문서만 읽기/쓰기
+    match /user_notes/{noteId} {
+      allow read, write: if request.auth != null
+          && noteId.matches(request.auth.uid + '_.*');
+    }
+  }
+}

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Cash — 아이콘 내보내기</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #07070f;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #fff;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    h1 { font-size: 18px; font-weight: 700; color: #ddd; }
+    .preview {
+      border-radius: 22.5%;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 20px 60px rgba(0,0,0,0.8);
+    }
+    canvas { display: block; }
+    button {
+      padding: 14px 40px;
+      background: #06B6D4;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+    button:hover { background: #0891B2; }
+    .note { font-size: 12px; color: #444; }
+  </style>
+</head>
+<body>
+
+<h1>Focus Cash 아이콘 — 1024 × 1024</h1>
+
+<div class="preview" style="width:200px;height:200px;">
+  <canvas id="preview" width="200" height="200"></canvas>
+</div>
+
+<canvas id="full" width="1024" height="1024" style="display:none;"></canvas>
+
+<button onclick="download()">PNG 다운로드 (1024×1024)</button>
+<p class="note">다운로드 후 focus_cash/assets/icon/icon.png 로 저장하세요</p>
+
+<script>
+function drawIcon(canvas) {
+  const w = canvas.width;
+  const s = w / 512; // scale factor
+  const ctx = canvas.getContext('2d');
+
+  // ── 배경 ──
+  const bgGrad = ctx.createRadialGradient(w*0.5, w*0.42, 0, w*0.5, w*0.5, w*0.7);
+  bgGrad.addColorStop(0,   '#12102a');
+  bgGrad.addColorStop(0.6, '#0c0a1e');
+  bgGrad.addColorStop(1,   '#07060f');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, w);
+
+  ctx.save();
+  ctx.scale(s, s);
+
+  // ── ambient glow ──
+  function radialGlow(cx, cy, r, color) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, color);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, r*0.7, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  radialGlow(256, 310, 200, 'rgba(79,70,229,0.18)');
+  radialGlow(256, 200, 160, 'rgba(6,182,212,0.10)');
+
+  // ── 외부 링 트랙 ──
+  ctx.beginPath();
+  ctx.arc(256, 256, 218, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 28;
+  ctx.stroke();
+
+  // ── 링 A (시안→인디고, 상단 ~70%) ──
+  ctx.save();
+  ctx.translate(256, 256);
+  ctx.rotate(0);
+  ctx.translate(-256, -256);
+
+  const ringAGrad = ctx.createLinearGradient(80, 80, 430, 430);
+  ringAGrad.addColorStop(0,   '#67E8F9');
+  ringAGrad.addColorStop(0.5, '#06B6D4');
+  ringAGrad.addColorStop(1,   '#4F46E5');
+
+  const circumference = 2 * Math.PI * 218;
+  const dashA = circumference * 0.70;
+  const gapA  = circumference * 0.30;
+
+  ctx.beginPath();
+  ctx.arc(256, 256, 218, -Math.PI/2, -Math.PI/2 + (dashA / 218));
+  ctx.strokeStyle = ringAGrad;
+  ctx.lineWidth = 20;
+  ctx.lineCap = 'round';
+  ctx.setLineDash([dashA, gapA]);
+  ctx.dashOffset = 0;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── 링 B (퍼플, 하단 ~22%) ──
+  ctx.save();
+  const dashB = circumference * 0.22;
+  const gapB  = circumference * 0.78;
+  ctx.beginPath();
+  ctx.arc(256, 256, 218, Math.PI * 0.6, Math.PI * 0.6 + (dashB / 218));
+  ctx.strokeStyle = 'rgba(124,58,237,0.5)';
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.setLineDash([dashB, gapB]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ── 내부 원판 ──
+  const plateGrad = ctx.createRadialGradient(220, 210, 0, 256, 256, 190);
+  plateGrad.addColorStop(0,   '#1a1535');
+  plateGrad.addColorStop(0.6, '#110e28');
+  plateGrad.addColorStop(1,   '#0c0a1e');
+
+  ctx.beginPath();
+  ctx.arc(256, 256, 186, 0, Math.PI*2);
+  ctx.fillStyle = plateGrad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(79,70,229,0.25)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ── 눈금 4개 ──
+  ctx.strokeStyle = 'rgba(6,182,212,0.4)';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  const ticks = [
+    [256, 74,  256, 92],
+    [256, 420, 256, 438],
+    [74,  256, 92,  256],
+    [420, 256, 438, 256],
+  ];
+  ticks.forEach(([x1,y1,x2,y2]) => {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  });
+
+  // ── 불꽃 (3 레이어) ──
+
+  // 베이스 글로우
+  const baseGrad = ctx.createRadialGradient(256, 360, 0, 256, 360, 100);
+  baseGrad.addColorStop(0,   'rgba(6,182,212,0.20)');
+  baseGrad.addColorStop(0.6, 'rgba(79,70,229,0.10)');
+  baseGrad.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = baseGrad;
+  ctx.beginPath();
+  ctx.ellipse(256, 360, 100, 40, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // 불꽃 경로 함수
+  function flamePath(ctx, scale, offsetY) {
+    const s = scale;
+    const oy = offsetY;
+    ctx.beginPath();
+    ctx.moveTo(256, 362 + oy);
+    ctx.bezierCurveTo(240+s*8, 358+oy, 222+s*10, 346+oy, 210+s*12, 330+oy);
+    ctx.bezierCurveTo(196+s*10, 312+oy, 190+s*8,  290+oy, 192+s*6,  268+oy);
+    ctx.bezierCurveTo(193+s*4,  248+oy, 200+s*2,  230+oy, 202,      212+oy);
+    ctx.bezierCurveTo(204,      196+oy, 202,      180+oy, 206,      166+oy);
+    ctx.bezierCurveTo(212,      148+oy, 226,      138+oy, 236,      128+oy);
+    ctx.bezierCurveTo(244,      118+oy, 252,      130+oy, 256,      140+oy);
+    ctx.bezierCurveTo(260,      130+oy, 268,      118+oy, 276,      128+oy);
+    ctx.bezierCurveTo(286,      138+oy, 300,      148+oy, 306,      166+oy);
+    ctx.bezierCurveTo(310,      180+oy, 308,      196+oy, 310,      212+oy);
+    ctx.bezierCurveTo(312,      230+oy, 319-s*2,  248+oy, 320-s*6, 268+oy);
+    ctx.bezierCurveTo(322-s*8,  290+oy, 316-s*10, 312+oy, 302-s*12,330+oy);
+    ctx.bezierCurveTo(290-s*10, 346+oy, 272-s*8,  358+oy, 256,      362+oy);
+    ctx.closePath();
+  }
+
+  // L1: 외곽 (퍼플→시안, 넓게 번짐)
+  ctx.save();
+  ctx.shadowBlur = 30;
+  ctx.shadowColor = 'rgba(6,182,212,0.4)';
+  const fl1 = ctx.createLinearGradient(256, 362, 256, 140);
+  fl1.addColorStop(0,    'rgba(49,46,129,0)');
+  fl1.addColorStop(0.12, 'rgba(67,56,202,0.7)');
+  fl1.addColorStop(0.40, 'rgba(79,70,229,0.85)');
+  fl1.addColorStop(0.65, 'rgba(6,182,212,0.75)');
+  fl1.addColorStop(0.88, 'rgba(165,243,252,0.45)');
+  fl1.addColorStop(1,    'rgba(255,255,255,0.2)');
+  flamePath(ctx, 1.0, 0);
+  ctx.fillStyle = fl1;
+  ctx.globalAlpha = 0.75;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // L2: 메인 바디 (시안)
+  ctx.save();
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = 'rgba(6,182,212,0.5)';
+  const fl2 = ctx.createLinearGradient(256, 362, 256, 140);
+  fl2.addColorStop(0,    '#1e40af');
+  fl2.addColorStop(0.25, '#0369a1');
+  fl2.addColorStop(0.55, '#0891b2');
+  fl2.addColorStop(0.78, '#06b6d4');
+  fl2.addColorStop(1,    '#e0f2fe');
+  flamePath(ctx, 0.7, 8);
+  ctx.fillStyle = fl2;
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // L3: 코어
+  ctx.save();
+  ctx.shadowBlur = 35;
+  ctx.shadowColor = 'rgba(34,211,238,0.6)';
+  const fl3 = ctx.createLinearGradient(256, 350, 256, 145);
+  fl3.addColorStop(0,    '#0284c7');
+  fl3.addColorStop(0.4,  '#22d3ee');
+  fl3.addColorStop(0.72, '#7dd3fc');
+  fl3.addColorStop(1,    '#ffffff');
+  flamePath(ctx, 0.4, 16);
+  ctx.fillStyle = fl3;
+  ctx.globalAlpha = 0.95;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // 팁 (흰 코어)
+  ctx.save();
+  ctx.shadowBlur = 40;
+  ctx.shadowColor = 'rgba(255,255,255,0.8)';
+  const tipGrad = ctx.createRadialGradient(256, 152, 0, 256, 156, 18);
+  tipGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+  tipGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = tipGrad;
+  ctx.beginPath();
+  ctx.ellipse(256, 152, 14, 20, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // ── 원판 광택 ──
+  const shineGrad = ctx.createRadialGradient(210, 200, 0, 256, 256, 186);
+  shineGrad.addColorStop(0,    'rgba(255,255,255,0.09)');
+  shineGrad.addColorStop(0.65, 'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.arc(256, 256, 186, 0, Math.PI*2);
+  ctx.fillStyle = shineGrad;
+  ctx.fill();
+
+  // ── 링 dot ──
+  ctx.save();
+  ctx.shadowBlur = 14;
+  ctx.shadowColor = '#06B6D4';
+  ctx.beginPath();
+  ctx.arc(256, 40, 9, 0, Math.PI*2);
+  ctx.fillStyle = '#67E8F9';
+  ctx.globalAlpha = 0.85;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  ctx.restore(); // scale
+}
+
+// 프리뷰
+const preview = document.getElementById('preview');
+drawIcon(preview);
+
+// 다운로드
+function download() {
+  const full = document.getElementById('full');
+  drawIcon(full);
+  const a = document.createElement('a');
+  a.download = 'icon.png';
+  a.href = full.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

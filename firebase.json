@@ -1,0 +1,27 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "focuscash-2676f",
+          "appId": "1:325235851935:android:3eee9f9897f96a570f18aa",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "focuscash-2676f",
+          "configurations": {
+            "android": "1:325235851935:android:3eee9f9897f96a570f18aa",
+            "ios": "1:325235851935:ios:f17affb78a5ac47c0f18aa",
+            "windows": "1:325235851935:web:6bc0b71c40b1bdd30f18aa"
+          }
+        }
+      }
+    }
+  }
+}

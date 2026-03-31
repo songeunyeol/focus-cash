@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6C22D4"/>
+      <stop offset="100%" style="stop-color:#3B0FA0"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA500"/>
+    </linearGradient>
+    <linearGradient id="pageLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E8E0FF"/>
+      <stop offset="100%" style="stop-color:#ffffff"/>
+    </linearGradient>
+    <linearGradient id="pageRight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#D8CCFF"/>
+    </linearGradient>
+    <linearGradient id="spineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4A0FA0"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="bookTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#C4A8FF"/>
+      <stop offset="100%" style="stop-color:#9D7FD4"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1a0050" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- 배경 -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+
+  <!-- 책 그림자 -->
+  <ellipse cx="240" cy="400" rx="165" ry="18" fill="#1a0050" opacity="0.4"/>
+
+  <!-- 책 측면 하단 (두께) -->
+  <polygon points="72,355 72,375 240,383 240,363" fill="#B8A0E8"/>
+  <polygon points="256,363 256,383 424,375 424,355" fill="#B8A0E8"/>
+  <polygon points="240,363 240,383 256,383 256,363" fill="#5B10C5"/>
+
+  <!-- 책 윗면 -->
+  <polygon points="72,148 72,168 240,158 240,138" fill="url(#bookTop)"/>
+  <polygon points="256,138 256,158 424,168 424,148" fill="url(#bookTop)"/>
+  <polygon points="240,138 240,158 256,158 256,138" fill="#7C3AED"/>
+
+  <!-- 책 본체 -->
+  <g filter="url(#shadow)">
+    <rect x="72" y="168" width="168" height="187" rx="6" fill="url(#pageLeft)"/>
+    <rect x="256" y="168" width="168" height="187" rx="6" fill="url(#pageRight)"/>
+    <rect x="236" y="162" width="24" height="198" rx="4" fill="url(#spineGrad)"/>
+  </g>
+
+  <!-- 왼쪽 줄 -->
+  <line x1="97"  y1="212" x2="220" y2="212" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="97"  y1="239" x2="220" y2="239" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="97"  y1="266" x2="220" y2="266" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="97"  y1="293" x2="220" y2="293" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="97"  y1="320" x2="172" y2="320" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- 오른쪽 줄 -->
+  <line x1="276" y1="212" x2="399" y2="212" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="276" y1="239" x2="399" y2="239" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="276" y1="266" x2="399" y2="266" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="276" y1="293" x2="399" y2="293" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+  <line x1="276" y1="320" x2="350" y2="320" stroke="#C4AAFF" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- 페이지 중앙 곡선 -->
+  <path d="M240,168 Q248,262 240,355" fill="none" stroke="#9D7FD4" stroke-width="3"/>
+  <path d="M256,168 Q248,262 256,355" fill="none" stroke="#9D7FD4" stroke-width="3"/>
+
+  <!-- 동전 (오른쪽 하단) -->
+  <circle cx="388" cy="372" r="72" fill="#FFA500" opacity="0.3"/>
+  <circle cx="388" cy="366" r="72" fill="url(#coin)"/>
+  <circle cx="388" cy="366" r="58" fill="none" stroke="#FFA500" stroke-width="7"/>
+  <text x="388" y="390" font-family="Arial Black, Arial" font-size="60" font-weight="900"
+        fill="#7C3AED" text-anchor="middle">₩</text>
+
+  <!-- 반짝임 -->
+  <circle cx="108" cy="108" r="9"  fill="#FFD700" opacity="0.9"/>
+  <circle cx="80"  cy="135" r="5"  fill="#FFD700" opacity="0.5"/>
+  <circle cx="136" cy="125" r="5"  fill="#FFD700" opacity="0.6"/>
+  <circle cx="420" cy="108" r="9"  fill="#FFD700" opacity="0.9"/>
+  <circle cx="448" cy="133" r="5"  fill="#FFD700" opacity="0.5"/>
+  <circle cx="394" cy="125" r="5"  fill="#FFD700" opacity="0.6"/>
+</svg>
