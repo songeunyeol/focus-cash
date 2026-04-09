@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 // ── Context 기반 동적 색상 ────────────────────────────────
-class _AppColors {
+class AppColors {
   final bool isDark;
-  const _AppColors(this.isDark);
+  const AppColors(this.isDark);
 
   Color get bg       => isDark ? const Color(0xFF0C0C14) : const Color(0xFFF0F2FF);
   Color get surface  => isDark ? const Color(0xFF14141E) : Colors.white;
@@ -49,8 +49,6 @@ class AppTheme {
   static const Color textMuted     = Color(0xFF5A5A72);
 
   // ── 상점 전용 (게임 아이템샵) ──────────────────────
-  static const Color storeBg         = Color(0xFF08080F);
-  static const Color storeCard       = Color(0xFF111120);
   static const Color rarityCommon    = Color(0xFF6B7280);
   static const Color rarityRare      = Color(0xFF06B6D4); // 시안
   static const Color rarityEpic      = Color(0xFF4F46E5); // 인디고
@@ -75,42 +73,7 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient storeCardGradient = LinearGradient(
-    colors: [Color(0xFF1A1A2E), Color(0xFF0D0D1A)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const RadialGradient timerBgGradient = RadialGradient(
-    center: Alignment.center,
-    radius: 0.8,
-    colors: [Color(0xFF0D0B2E), Color(0xFF0C0C14)],
-  );
-
   // ── 카드 데코레이션 헬퍼 ───────────────────────────
-  static BoxDecoration get premiumCard => BoxDecoration(
-    color: cardColor,
-    borderRadius: BorderRadius.circular(20),
-    border: Border.all(color: borderSubtle, width: 1),
-  );
-
-  static BoxDecoration storeItemCard({Color glowColor = rarityEpic}) =>
-      BoxDecoration(
-        gradient: storeCardGradient,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: glowColor.withValues(alpha: 0.4),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: glowColor.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 0,
-          ),
-        ],
-      );
-
   static BoxDecoration get glowButton => BoxDecoration(
     gradient: primaryGradient,
     borderRadius: BorderRadius.circular(14),
@@ -125,8 +88,8 @@ class AppTheme {
   );
 
   // ── Context 기반 동적 색상 접근자 ────────────────────────
-  static _AppColors of(BuildContext context) =>
-      _AppColors(Theme.of(context).brightness == Brightness.dark);
+  static AppColors of(BuildContext context) =>
+      AppColors(Theme.of(context).brightness == Brightness.dark);
 
   static ThemeData get lightTheme {
     return ThemeData(

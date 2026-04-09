@@ -63,7 +63,7 @@ class TodayStatsCard extends StatelessWidget {
                 child: _StatItem(
                   icon: Icons.timer_outlined,
                   value: focusMinutes < 60
-                      ? '${focusMinutes}분'
+                      ? '$focusMinutes분'
                       : '${focusMinutes ~/ 60}h ${focusMinutes % 60}m',
                   label: '집중 시간',
                   color: AppTheme.primaryColor,
@@ -90,7 +90,7 @@ class TodayStatsCard extends StatelessWidget {
               Expanded(
                 child: _StatItem(
                   icon: Icons.local_fire_department_outlined,
-                  value: '${streak}일',
+                  value: '$streak일',
                   label: '연속 스트릭',
                   color: AppTheme.secondaryColor,
                 ),

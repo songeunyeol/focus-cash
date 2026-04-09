@@ -128,7 +128,7 @@ class FocusProvider extends ChangeNotifier {
       await _creditService.addCredits(
         userId: _currentSession!.userId,
         amount: credits,
-        description: '${actualMinutes}분 집중 완료',
+        description: '$actualMinutes분 집중 완료',
       ).timeout(const Duration(seconds: 5));
     } catch (e) {
       // Firebase 미설정 시 무시

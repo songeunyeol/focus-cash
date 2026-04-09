@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +7,7 @@ import '../../models/gifticon_code.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/store_service.dart';
 
-Widget _safeBase64Image(String base64Str) {
+Widget _safeBase64Image(String base64Str, BuildContext context) {
   try {
     final Uint8List bytes = base64Decode(base64Str);
     return Image.memory(bytes, width: double.infinity, fit: BoxFit.contain);
@@ -16,11 +15,11 @@ Widget _safeBase64Image(String base64Str) {
     return Container(
       height: 120,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E2E),
+        color: AppTheme.of(context).surface,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(
-        child: Icon(Icons.broken_image_rounded, color: Color(0xFF6B7280), size: 40),
+      child: Center(
+        child: Icon(Icons.broken_image_rounded, color: AppTheme.of(context).textMuted, size: 40),
       ),
     );
   }
@@ -335,7 +334,7 @@ class _DeliveryFormSheetState extends State<_DeliveryFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 24, right: 24, top: 24,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -559,7 +558,7 @@ class _RoulettePrizeCardState extends State<_RoulettePrizeCard> {
                 const SizedBox(height: 14),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: _safeBase64Image(widget.gifticon.imageBase64),
+                  child: _safeBase64Image(widget.gifticon.imageBase64, context),
                 ),
               ],
             ],
@@ -663,7 +662,7 @@ class _RaffleGifticonCardState extends State<_RaffleGifticonCard> {
                 if (hasImage)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: _safeBase64Image(widget.gifticon.imageBase64),
+                    child: _safeBase64Image(widget.gifticon.imageBase64, context),
                   ),
                 if (widget.gifticon.hiddenAt == null) ...[
                   const SizedBox(height: 14),
@@ -819,7 +818,7 @@ class _GifticonCardState extends State<_GifticonCard> {
                 if (hasImage) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: _safeBase64Image(widget.gifticon.imageBase64),
+                    child: _safeBase64Image(widget.gifticon.imageBase64, context),
                   ),
                   const SizedBox(height: 16),
                 ],

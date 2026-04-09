@@ -464,7 +464,7 @@ class _DayDetailSheetState extends State<_DayDetailSheet> {
             ? '$h시간 $m분'
             : '$m분';
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 24,
         right: 24,

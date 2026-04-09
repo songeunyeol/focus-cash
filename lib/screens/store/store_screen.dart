@@ -123,18 +123,18 @@ class _StoreScreenState extends State<StoreScreen>
             fontSize: 14,
           ),
           tabs: const [
-            Tab(icon: Icon(Icons.card_giftcard_outlined, size: 18), text: '교환'),
-            Tab(icon: Icon(Icons.casino_outlined, size: 18), text: '룰렛'),
             Tab(icon: Icon(Icons.emoji_events_outlined, size: 18), text: '응모방'),
+            Tab(icon: Icon(Icons.casino_outlined, size: 18), text: '룰렛'),
+            Tab(icon: Icon(Icons.card_giftcard_outlined, size: 18), text: '교환'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildExchangeTab(),
-          _buildRouletteTab(),
           _buildRaffleTab(),
+          _buildRouletteTab(),
+          _buildExchangeTab(),
         ],
       ),
     );
@@ -1537,11 +1537,7 @@ class _ExchangeListTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF111120)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppTheme.of(context).storeCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: glowColor.withValues(alpha: canAfford ? 0.5 : 0.15),
