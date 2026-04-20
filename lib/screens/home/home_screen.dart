@@ -10,6 +10,7 @@ import '../../widgets/quick_start_button.dart';
 import '../../widgets/weekly_chart.dart';
 import '../../services/focus_service.dart';
 import '../../models/focus_session.dart';
+import '../../utils/responsive_utils.dart';
 import '../store/store_screen.dart';
 import '../ranking/ranking_screen.dart';
 import '../profile/profile_screen.dart';
@@ -77,19 +78,70 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  static const _navItems = [
+    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: '홈'),
+    (icon: Icons.storefront_outlined, activeIcon: Icons.storefront_rounded, label: '상점'),
+    (icon: Icons.leaderboard_outlined, activeIcon: Icons.leaderboard_rounded, label: '랭킹'),
+    (icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: '프로필'),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = context.isTablet;
+
+    final pages = [
+      _buildHomePage(),
+      _buildStorePage(),
+      _buildRankingPage(),
+      _buildProfilePage(),
+    ];
+
+    if (isTablet) {
+      return Scaffold(
+        body: SafeArea(
+          child: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _currentIndex,
+                onDestinationSelected: (i) => setState(() => _currentIndex = i),
+                labelType: NavigationRailLabelType.all,
+                backgroundColor: AppTheme.of(context).surface,
+                selectedIconTheme: const IconThemeData(color: AppTheme.primaryColor),
+                unselectedIconTheme: IconThemeData(color: AppTheme.of(context).textMuted),
+                selectedLabelTextStyle: const TextStyle(
+                  color: AppTheme.primaryColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelTextStyle: TextStyle(
+                  color: AppTheme.of(context).textMuted,
+                  fontSize: 12,
+                ),
+                destinations: _navItems
+                    .map((e) => NavigationRailDestination(
+                          icon: Icon(e.icon),
+                          selectedIcon: Icon(e.activeIcon),
+                          label: Text(e.label),
+                        ))
+                    .toList(),
+              ),
+              VerticalDivider(
+                thickness: 1,
+                width: 1,
+                color: AppTheme.of(context).borderSubtle,
+              ),
+              Expanded(
+                child: IndexedStack(index: _currentIndex, children: pages),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildHomePage(),
-            _buildStorePage(),
-            _buildRankingPage(),
-            _buildProfilePage(),
-          ],
-        ),
+        child: IndexedStack(index: _currentIndex, children: pages),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -111,24 +163,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home_rounded),
-                label: '홈'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.storefront_outlined),
-                activeIcon: Icon(Icons.storefront_rounded),
-                label: '상점'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.leaderboard_outlined),
-                activeIcon: Icon(Icons.leaderboard_rounded),
-                label: '랭킹'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: '프로필'),
-          ],
+          items: _navItems
+              .map((e) => BottomNavigationBarItem(
+                    icon: Icon(e.icon),
+                    activeIcon: Icon(e.activeIcon),
+                    label: e.label,
+                  ))
+              .toList(),
         ),
       ),
     );
@@ -142,8 +183,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       onRefresh: () => authProvider.loadUser(),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
-        child: Column(
+        padding: context.responsivePadding,
+        child: Center(
+         child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: context.contentMaxWidth),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -208,6 +252,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             else
               WeeklyChart(data: List.filled(7, 0)),
           ],
+         ),
+        ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../config/theme.dart';
+import '../utils/responsive_utils.dart';
 
 class WeeklyChart extends StatelessWidget {
   final List<int>? data;
@@ -13,8 +14,10 @@ class WeeklyChart extends StatelessWidget {
     final days = ['월', '화', '수', '목', '금', '토', '일'];
     final maxY = chartData.reduce((a, b) => a > b ? a : b).toDouble();
 
+    final chartHeight = context.isTablet ? 260.0 : 200.0;
+
     return Container(
-      height: 200,
+      height: chartHeight,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.of(context).card,
