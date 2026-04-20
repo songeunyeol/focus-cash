@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,6 +14,13 @@ import 'providers/focus_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/ad_service.dart';
 import 'services/notification_service.dart';
+
+Future<bool> _isTablet() async {
+  if (!Platform.isIOS && !Platform.isAndroid) return false;
+  final view = WidgetsBinding.instance.platformDispatcher.views.first;
+  final size = view.physicalSize / view.devicePixelRatio;
+  return size.shortestSide >= 600;
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,10 +45,13 @@ void main() async {
     debugPrint('⚠️ 알림 초기화 실패 (무시): $e');
   }
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // 아이패드에서는 모든 방향 허용, 폰은 세로 고정
+  final isTablet = await _isTablet();
+  await SystemChrome.setPreferredOrientations(
+    isTablet
+        ? DeviceOrientation.values
+        : [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+  );
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
