@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'page_transitions.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_terms_screen.dart';
 import '../screens/auth/signup_profile_screen.dart';
@@ -30,41 +31,54 @@ class AppRoutes {
   static const String achievements = '/achievements';
   static const String focusCalendar = '/focus-calendar';
 
-  static Map<String, WidgetBuilder> get routes => {
-        login: (context) => const LoginScreen(),
-        signupTerms: (context) => const SignupTermsScreen(),
-        signupProfile: (context) => const SignupProfileScreen(),
-        signupComplete: (context) => const SignupCompleteScreen(),
-        onboarding: (context) => const OnboardingScreen(),
-        home: (context) => const HomeScreen(),
-        focusSetup: (context) => const FocusSetupScreen(),
-        store: (context) => const StoreScreen(),
-        ranking: (context) => const RankingScreen(),
-        profile: (context) => const ProfileScreen(),
-        achievements: (context) => const AchievementsScreen(),
-        focusCalendar: (context) => const FocusCalendarScreen(),
-      };
-
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    if (settings.name == focus) {
-      final args = settings.arguments as Map<String, dynamic>;
-      return MaterialPageRoute(
-        builder: (context) => FocusScreen(
-          focusMinutes: args['focusMinutes'] as int,
-          hardcoreMode: args['hardcoreMode'] as String? ?? 'normal',
-          tag: args['tag'] as String? ?? '',
-          watchAdOnStart: args['watchAdOnStart'] as bool? ?? false,
-        ),
-      );
+    switch (settings.name) {
+      case login:
+        return fadeThroughRoute(page: const LoginScreen(), settings: settings);
+      case signupTerms:
+        return sharedAxisRoute(
+            page: const SignupTermsScreen(), settings: settings);
+      case signupProfile:
+        return sharedAxisRoute(
+            page: const SignupProfileScreen(), settings: settings);
+      case signupComplete:
+        return sharedAxisRoute(
+            page: const SignupCompleteScreen(), settings: settings);
+      case onboarding:
+        return fadeThroughRoute(
+            page: const OnboardingScreen(), settings: settings);
+      case home:
+        return fadeThroughRoute(page: const HomeScreen(), settings: settings);
+      case focusSetup:
+        return sharedAxisRoute(
+            page: const FocusSetupScreen(), settings: settings);
+      case focus:
+        final args = settings.arguments as Map<String, dynamic>;
+        return sharedAxisRoute(
+          settings: settings,
+          page: FocusScreen(
+            focusMinutes: args['focusMinutes'] as int,
+            hardcoreMode: args['hardcoreMode'] as String? ?? 'normal',
+            tag: args['tag'] as String? ?? '',
+            watchAdOnStart: args['watchAdOnStart'] as bool? ?? false,
+          ),
+        );
+      case store:
+        return sharedAxisRoute(page: const StoreScreen(), settings: settings);
+      case ranking:
+        return sharedAxisRoute(
+            page: const RankingScreen(), settings: settings);
+      case profile:
+        return sharedAxisRoute(
+            page: const ProfileScreen(), settings: settings);
+      case achievements:
+        return sharedAxisRoute(
+            page: const AchievementsScreen(), settings: settings);
+      case focusCalendar:
+        return sharedAxisRoute(
+            page: const FocusCalendarScreen(), settings: settings);
+      default:
+        return fadeThroughRoute(page: const HomeScreen(), settings: settings);
     }
-    if (settings.name == signupProfile) {
-      return MaterialPageRoute(
-        builder: (context) => const SignupProfileScreen(),
-        settings: settings,
-      );
-    }
-    return MaterialPageRoute(
-      builder: (context) => const HomeScreen(),
-    );
   }
 }

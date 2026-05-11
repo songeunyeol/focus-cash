@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
@@ -81,14 +82,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildHomePage(),
-            _buildStorePage(),
-            _buildRankingPage(),
-            _buildProfilePage(),
-          ],
+        child: PageTransitionSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
+              FadeThroughTransition(
+                animation: primaryAnimation,
+                secondaryAnimation: secondaryAnimation,
+                child: child,
+              ),
+          child: KeyedSubtree(
+            key: ValueKey(_currentIndex),
+            child: _buildCurrentPage(),
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -283,16 +288,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return '오늘 하루 수고했어요! 🌟';
   }
 
-  Widget _buildStorePage() {
-    return const StoreScreen();
-  }
-
-  Widget _buildRankingPage() {
-    return const RankingScreen();
-  }
-
-  Widget _buildProfilePage() {
-    return const ProfileScreen();
+  Widget _buildCurrentPage() {
+    return switch (_currentIndex) {
+      0 => _buildHomePage(),
+      1 => const StoreScreen(),
+      2 => const RankingScreen(),
+      _ => const ProfileScreen(),
+    };
   }
 }
 

@@ -71,7 +71,6 @@ class FocusCashApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
           scrollBehavior: const _NoGlowScrollBehavior(),
-          routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.onGenerateRoute,
           home: const AppStartup(),
         ),
