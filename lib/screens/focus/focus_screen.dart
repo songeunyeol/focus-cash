@@ -10,6 +10,7 @@ import '../../config/theme.dart';
 import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/focus_provider.dart';
+import '../../services/screen_state_service.dart';
 import '../../services/ad_service.dart';
 
 class FocusScreen extends StatefulWidget {
@@ -35,7 +36,12 @@ class _FocusScreenState extends State<FocusScreen>
   final AdService _adService = AdService();
   bool _creditsApplied = false;
   bool _rewardAdWatched = false;
-  Timer? _backgroundTimer;
+  /// 일시정지 시각. 복귀 시 이탈 시간을 벽시계로 계산한다.
+  DateTime? _pausedAt;
+
+  /// 일시정지가 "화면 꺼짐" 때문이었는지. 플랫폼 조회는 비동기라 Future 로 보관했다가
+  /// 복귀 시점에 await 해서 경쟁 상태를 피한다.
+  Future<bool>? _pausedByScreenOff;
   FocusProvider? _focusProviderRef;
 
   late AnimationController _completedAnimController;
@@ -71,7 +77,6 @@ class _FocusScreenState extends State<FocusScreen>
 
   @override
   void dispose() {
-    _backgroundTimer?.cancel();
     _focusProviderRef?.removeListener(_onFocusStateChanged);
     WidgetsBinding.instance.removeObserver(this);
     _adService.dispose();
@@ -103,18 +108,37 @@ class _FocusScreenState extends State<FocusScreen>
     final focusProvider = context.read<FocusProvider>();
 
     if (state == AppLifecycleState.paused) {
-      // 30초 유예 후 종료 (알림 확인, 전화 수신 등 단순 이탈 허용)
-      if (focusProvider.state == FocusState.focusing) {
-        _backgroundTimer = Timer(const Duration(seconds: 30), () {
-          if (mounted && focusProvider.state == FocusState.focusing) {
-            focusProvider.abandonSession();
-          }
-        });
-      }
+      if (focusProvider.state != FocusState.focusing) return;
+      // 백그라운드에서 도는 Timer 는 OS 에 스로틀되어 신뢰할 수 없다.
+      // 시각만 기록해두고 판정은 복귀 시점에 벽시계로 한다.
+      _pausedAt = DateTime.now();
+      _pausedByScreenOff = ScreenStateService.isScreenOff();
+      focusProvider.onAppPaused();
     } else if (state == AppLifecycleState.resumed) {
-      // 앱으로 복귀하면 유예 타이머 취소
-      _backgroundTimer?.cancel();
-      _backgroundTimer = null;
+      _handleResume(focusProvider);
+    }
+  }
+
+  Future<void> _handleResume(FocusProvider focusProvider) async {
+    final pausedAt = _pausedAt;
+    final screenOffFuture = _pausedByScreenOff;
+    _pausedAt = null;
+    _pausedByScreenOff = null;
+
+    // 백그라운드 동안 벌어진 공백을 startedAt 기준으로 메운다.
+    focusProvider.syncElapsed();
+
+    if (pausedAt == null || focusProvider.state != FocusState.focusing) return;
+
+    // 화면을 끄고 공부한 경우는 이탈이 아니다.
+    final wasScreenOff = await screenOffFuture ?? false;
+    if (wasScreenOff) return;
+
+    if (!mounted || focusProvider.state != FocusState.focusing) return;
+
+    final away = DateTime.now().difference(pausedAt);
+    if (away > const Duration(seconds: 30)) {
+      focusProvider.abandonSession();
     }
   }
 

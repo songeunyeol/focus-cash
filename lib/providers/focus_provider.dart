@@ -20,6 +20,22 @@ class FocusProvider extends ChangeNotifier {
   int _elapsedSeconds = 0;
   Timer? _timer;
   bool _isCompleting = false;
+
+  /// 벽시계 기준 경과 시간 계산을 위한 보조 상태.
+  /// _elapsedSeconds 를 1초마다 누산하면 앱이 스로틀될 때 시간이 어긋나므로
+  /// startedAt 과의 차이로 매 틱 재계산한다.
+  DateTime? _lastTickAt;
+
+  /// 단조 시계. 기기 시각 조작을 감지하는 교차 검증용.
+  /// (딥슬립 중에는 멈출 수 있어 경과 시간의 주 기준으로는 쓰지 않는다)
+  final Stopwatch _monotonic = Stopwatch();
+
+  /// 전면 상태에서 벽시계가 비정상적으로 점프한 정황
+  bool _clockTampered = false;
+
+  /// 마지막 틱 이후 앱이 백그라운드를 거쳤는지.
+  /// 백그라운드 구간의 시간 공백은 정상이므로 시각 조작 판정에서 제외한다.
+  bool _sawPauseSinceLastTick = false;
   int _earnedCredits = 0;
   int _earnedXp = 0;
   int _newLevel = 0;
@@ -33,6 +49,10 @@ class FocusProvider extends ChangeNotifier {
   int get remainingSeconds => _remainingSeconds;
   int get elapsedSeconds => _elapsedSeconds;
   int get elapsedMinutes => _elapsedSeconds ~/ 60;
+  bool get clockTampered => _clockTampered;
+
+  /// 앱이 백그라운드로 내려갔음을 알린다. 화면의 라이프사이클 훅에서 호출한다.
+  void onAppPaused() => _sawPauseSinceLastTick = true;
   int get earnedCredits => _earnedCredits;
   double get progress => _currentSession != null
       ? _elapsedSeconds / (_currentSession!.targetMinutes * 60)
@@ -67,6 +87,11 @@ class FocusProvider extends ChangeNotifier {
 
     _remainingSeconds = targetMinutes * 60;
     _elapsedSeconds = 0;
+    _clockTampered = false;
+    _lastTickAt = DateTime.now();
+    _monotonic
+      ..reset()
+      ..start();
     _state = FocusState.focusing;
 
     _startTimer();
@@ -75,20 +100,58 @@ class FocusProvider extends ChangeNotifier {
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (_state != FocusState.focusing) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
 
-      _elapsedSeconds++;
-      _remainingSeconds--;
+  Future<void> _tick() async {
+    if (_state != FocusState.focusing) return;
 
-      if (_remainingSeconds <= 0 && !_isCompleting) {
-        _isCompleting = true;
-        await _completeSession();
-        return;
-      }
+    _detectClockJump();
+    syncElapsed();
 
-      notifyListeners();
-    });
+    if (_remainingSeconds <= 0 && !_isCompleting) {
+      _isCompleting = true;
+      await _completeSession();
+      return;
+    }
+
+    notifyListeners();
+  }
+
+  /// 1초 간격으로 도는 틱 사이에 벽시계가 크게 튀었다면 기기 시각이 바뀐 것이다.
+  /// (앱이 백그라운드로 내려가 있는 동안은 틱이 안 돌므로 여기 걸리지 않는다)
+  void _detectClockJump() {
+    final now = DateTime.now();
+    final last = _lastTickAt;
+    _lastTickAt = now;
+    if (last == null) return;
+
+    // 백그라운드를 거쳤다면 공백이 큰 게 정상이다. 한 번 건너뛴다.
+    if (_sawPauseSinceLastTick) {
+      _sawPauseSinceLastTick = false;
+      return;
+    }
+
+    final gap = now.difference(last);
+    if (gap.isNegative || gap > const Duration(seconds: 90)) {
+      _clockTampered = true;
+    }
+  }
+
+  /// 경과·잔여 시간을 startedAt 기준으로 재계산한다.
+  /// 앱 재개 시점에도 호출해 백그라운드 동안의 공백을 메운다.
+  void syncElapsed() {
+    final session = _currentSession;
+    if (session == null) return;
+
+    final target = session.targetMinutes * 60;
+    final elapsed = DateTime.now().difference(session.startedAt).inSeconds;
+
+    _elapsedSeconds = elapsed.clamp(0, target);
+    _remainingSeconds = (target - _elapsedSeconds).clamp(0, target);
+
+    // 복귀 직후 다음 틱이 정지 구간 전체를 점프로 오인하지 않도록 기준을 당겨둔다.
+    _lastTickAt = DateTime.now();
   }
 
   /// 테스트용: 즉시 완료 처리
@@ -104,8 +167,16 @@ class FocusProvider extends ChangeNotifier {
 
   Future<void> _completeSession() async {
     _timer?.cancel();
+    _monotonic.stop();
 
     if (_currentSession == null) return;
+
+    // 기기 시각이 조작된 정황이 있으면 크레딧을 지급하지 않고 무효 처리한다.
+    if (_clockTampered) {
+      _isCompleting = false;
+      await abandonSession(nopenalty: true);
+      return;
+    }
 
     final actualMinutes = _elapsedSeconds ~/ 60;
 
@@ -281,6 +352,12 @@ class FocusProvider extends ChangeNotifier {
     _remainingSeconds = 0;
     _elapsedSeconds = 0;
     _isCompleting = false;
+    _clockTampered = false;
+    _sawPauseSinceLastTick = false;
+    _lastTickAt = null;
+    _monotonic
+      ..stop()
+      ..reset();
     _earnedCredits = 0;
     _earnedXp = 0;
     _newLevel = 0;
@@ -291,6 +368,7 @@ class FocusProvider extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _monotonic.stop();
     super.dispose();
   }
 }
