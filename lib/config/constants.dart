@@ -6,6 +6,11 @@ class AppConstants {
     '🦁', '🐯', '🦊', '🐻', '🐼', '🦄', '🐙', '🦋', '🐬', '🦅',
   ];
 
+  // 홈 다이얼의 기준이 되는 하루 집중 목표.
+  // 세션 상한이 120분이므로 두 세션이면 채워지는 값으로 잡았다.
+  // 추후 사용자 설정으로 뺄 수 있게 한 곳에만 둔다.
+  static const int dailyGoalMinutes = 240;
+
   // Credit Economy
   static const int creditsPerTenMinutes = 10;
   static const int startAdBonus = 15;
