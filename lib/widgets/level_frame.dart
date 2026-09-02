@@ -1,3 +1,5 @@
+// NOTE: Phase 2 임시 색 스왑. 형태 기반 등급 체계(RarityRing)는 Phase 9 에서
+// 이 파일을 CustomPainter 로 전면 재작성하며 교체한다.
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../config/constants.dart';
@@ -98,12 +100,12 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFFB45309).withValues(alpha: 0.35),
+                color: const Color(0xFF6E747C).withValues(alpha: 0.35),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFB45309).withValues(alpha: 0.4),
+                  color: const Color(0xFF6E747C).withValues(alpha: 0.4),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
@@ -115,7 +117,7 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
             height: widget.size - 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFB45309), width: 2.5),
+              border: Border.all(color: const Color(0xFF6E747C), width: 2.5),
             ),
           ),
           SizedBox(
@@ -137,18 +139,18 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
         shape: BoxShape.circle,
         gradient: const SweepGradient(
           colors: [
-            Color(0xFFCBD5E1),
-            Color(0xFFF8FAFC),
-            Color(0xFF94A3B8),
-            Color(0xFFE2E8F0),
-            Color(0xFFF8FAFC),
-            Color(0xFF94A3B8),
-            Color(0xFFCBD5E1),
+            Color(0xFFA8ADB4),
+            Color(0xFFF4F5F6),
+            Color(0xFF6E747C),
+            Color(0xFFA8ADB4),
+            Color(0xFFF4F5F6),
+            Color(0xFF6E747C),
+            Color(0xFFA8ADB4),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF94A3B8).withValues(alpha: 0.4),
+            color: const Color(0xFF6E747C).withValues(alpha: 0.4),
             blurRadius: 16,
             spreadRadius: 2,
           ),
@@ -168,14 +170,14 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
         shape: BoxShape.circle,
         gradient: SweepGradient(
           colors: [
-            Color(0xFFF59E0B),
-            Color(0xFFFFD60A),
-            Color(0xFFFBBF24),
-            Color(0xFFB45309),
-            Color(0xFFF59E0B),
-            Color(0xFFFFD60A),
-            Color(0xFFB45309),
-            Color(0xFFF59E0B),
+            Color(0xFFC25A18),
+            Color(0xFFFF7A2F),
+            Color(0xFFFFA155),
+            Color(0xFFC25A18),
+            Color(0xFFC25A18),
+            Color(0xFFFF7A2F),
+            Color(0xFFC25A18),
+            Color(0xFFC25A18),
           ],
         ),
       ),
@@ -195,11 +197,11 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
           shape: BoxShape.circle,
           gradient: SweepGradient(
             colors: const [
-              Color(0xFF4F46E5),
-              Color(0xFF818CF8),
-              Color(0xFF06B6D4),
-              Color(0xFF818CF8),
-              Color(0xFF4F46E5),
+              Color(0xFFFF7A2F),
+              Color(0xFFFFA155),
+              Color(0xFFC25A18),
+              Color(0xFFFFA155),
+              Color(0xFFFF7A2F),
             ],
             transform: GradientRotation(_spinController.value * 2 * pi),
           ),
@@ -222,12 +224,12 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
           shape: BoxShape.circle,
           gradient: SweepGradient(
             colors: const [
-              Color(0xFF4F46E5),
-              Color(0xFF06B6D4),
-              Color(0xFF10B981),
-              Color(0xFFF59E0B),
-              Color(0xFFEC4899),
-              Color(0xFF4F46E5),
+              Color(0xFFFF7A2F),
+              Color(0xFFC25A18),
+              Color(0xFFFFA155),
+              Color(0xFFC25A18),
+              Color(0xFFC25A18),
+              Color(0xFFFF7A2F),
             ],
             transform: GradientRotation(_spinController.value * 2 * pi),
           ),
@@ -265,9 +267,9 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
   // 맥동 글로우
   Widget _buildPulseGlow(double total) {
     final Color glowColor = switch (_grade) {
-      3 => const Color(0xFFF59E0B),
-      4 => const Color(0xFF4F46E5),
-      _ => const Color(0xFF06B6D4),
+      3 => const Color(0xFFC25A18),
+      4 => const Color(0xFFFF7A2F),
+      _ => const Color(0xFFC25A18),
     };
 
     return AnimatedBuilder(
@@ -326,13 +328,13 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
           height: 12,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF818CF8), Color(0xFF06B6D4)],
+              colors: [Color(0xFFFFA155), Color(0xFFC25A18)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4F46E5).withValues(alpha: 0.9),
+                color: const Color(0xFFFF7A2F).withValues(alpha: 0.9),
                 blurRadius: 8,
               ),
             ],
@@ -345,14 +347,14 @@ class _LevelFrameState extends State<LevelFrame> with TickerProviderStateMixin {
   // Grade 5: 8개 공전 도트
   List<Widget> _buildOrbitingDots(double total) {
     final List<Color> colors = [
-      const Color(0xFF4F46E5),
-      const Color(0xFF06B6D4),
-      const Color(0xFFF59E0B),
-      const Color(0xFFEC4899),
-      const Color(0xFF10B981),
-      const Color(0xFF818CF8),
-      const Color(0xFFFBBF24),
-      const Color(0xFFF472B6),
+      const Color(0xFFFF7A2F),
+      const Color(0xFFC25A18),
+      const Color(0xFFC25A18),
+      const Color(0xFFC25A18),
+      const Color(0xFFFFA155),
+      const Color(0xFFFFA155),
+      const Color(0xFFFFA155),
+      const Color(0xFFFFA155),
     ];
     final double c = total / 2;
     final double r = widget.size / 2 + 2.0;
@@ -430,8 +432,8 @@ class _TwinklingStarState extends State<_TwinklingStar>
           '★',
           style: TextStyle(
             fontSize: 14,
-            color: Color(0xFFFFD60A),
-            shadows: [Shadow(color: Color(0xFFF59E0B), blurRadius: 10)],
+            color: Color(0xFFFF7A2F),
+            shadows: [Shadow(color: Color(0xFFC25A18), blurRadius: 10)],
           ),
         ),
       ),
@@ -476,8 +478,8 @@ class LevelBadge extends StatelessWidget {
 
   Color _colorForGrade(int grade, BuildContext context) {
     switch (grade) {
-      case 1: return const Color(0xFFB45309);
-      case 2: return const Color(0xFF94A3B8);
+      case 1: return const Color(0xFF6E747C);
+      case 2: return const Color(0xFFA8ADB4);
       case 3: return AppTheme.rankGold;
       case 4: return AppTheme.primaryColor;
       case 5: return AppTheme.secondaryColor;
