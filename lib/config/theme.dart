@@ -93,6 +93,8 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
+      fontFamily: 'Pretendard',
+      fontFamilyFallback: const ['Noto Color Emoji', 'sans-serif'],
       brightness: Brightness.light,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: const Color(0xFFF0F2FF),
@@ -142,6 +144,8 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     return ThemeData(
+      fontFamily: 'Pretendard',
+      fontFamilyFallback: const ['Noto Color Emoji', 'sans-serif'],
       brightness: Brightness.dark,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
