@@ -156,6 +156,17 @@ class _ImmersionView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Opacity(
+                opacity: 0.45,
+                child: Image.asset(
+                  'assets/images/mascot_immersion.png',
+                  width: 72,
+                  height: 72,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.medium,
+                ),
+              ),
+              const SizedBox(height: Sp.x6),
               Text(
                 ImmersionRules.timerLabel(remainingSeconds),
                 style: DsType.timerDisplay.dim(c.textDim),

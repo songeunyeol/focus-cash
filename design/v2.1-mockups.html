@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FocusCash Design v2.1 — Mockups</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<style>
+  :root, [data-theme="light"] {
+    --void: #000000;
+    --bg: #FAF9F7;
+    --surface: #FFFFFF;
+    --raised: #FFFFFF;
+    --overlay: #F2F0ED;
+    --border-subtle: rgba(28,25,23,.08);
+    --border: rgba(28,25,23,.12);
+    --border-strong: rgba(28,25,23,.18);
+    --text: #1C1917;
+    --text-2: #57534E;
+    --text-3: #8A827C;
+    --text-disabled: #C4BEB8;
+    --flame-dim: #C25A18;
+    --flame: #FF7A2F;
+    --flame-bright: #FFA155;
+    --flame-tint: rgba(255,122,47,.12);
+    --accent-text: #C25A18;
+    --on-accent: #FFFFFF;
+    --success: #1F9D63;
+    --danger: #D64545;
+    --shadow: 0 2px 8px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.08);
+    --nav-h: 64px;
+    --safe-b: 12px;
+  }
+  [data-theme="dark"] {
+    --bg: #07080A;
+    --surface: #101113;
+    --raised: #17191C;
+    --overlay: #1E2125;
+    --border-subtle: rgba(255,255,255,.06);
+    --border: rgba(255,255,255,.10);
+    --border-strong: rgba(255,255,255,.16);
+    --text: #F4F5F6;
+    --text-2: #A8ADB4;
+    --text-3: #6E747C;
+    --text-disabled: #454A51;
+    --flame-tint: rgba(255,122,47,.14);
+    --accent-text: #FF7A2F;
+    --on-accent: #07080A;
+    --success: #5FC992;
+    --danger: #FF6B6B;
+    --shadow: none;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard", system-ui, -apple-system, sans-serif;
+    background: #1a1b1e;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+  h1.page-title {
+    color: #f4f5f6; font-size: 20px; font-weight: 700; letter-spacing: -.3px;
+    margin-bottom: 4px;
+  }
+  .page-sub { color: #8a9098; font-size: 13px; margin-bottom: 20px; line-height: 1.5; max-width: 920px; }
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center;
+  }
+  .toolbar button, .chip {
+    appearance: none; border: 1px solid rgba(255,255,255,.12);
+    background: #2a2c31; color: #d0d4da; border-radius: 999px;
+    padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  .toolbar button.active { background: #FF7A2F; color: #07080A; border-color: transparent; }
+  .toolbar .sep { width: 1px; height: 20px; background: rgba(255,255,255,.12); margin: 0 4px; }
+  .stage {
+    display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;
+  }
+  .phone {
+    width: 390px; height: 844px; border-radius: 36px;
+    background: var(--bg); color: var(--text);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 24px 64px rgba(0,0,0,.45);
+    overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .phone.immersion { background: #000; }
+  .status {
+    height: 44px; padding: 14px 24px 0; display: flex; justify-content: space-between;
+    font-size: 12px; font-weight: 600; color: var(--text); flex-shrink: 0;
+  }
+  .phone.immersion .status { color: #3A3D42; }
+  .screen { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .pad { padding: 0 16px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px 12px; flex-shrink: 0;
+  }
+  .who { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--flame), var(--flame-bright));
+    display: grid; place-items: center; color: var(--on-accent); font-size: 12px; font-weight: 700;
+  }
+  .credits {
+    display: flex; align-items: center; gap: 6px;
+    font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px;
+  }
+  .credits .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--flame);
+    box-shadow: 0 0 0 3px var(--flame-tint);
+  }
+  .hero {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 8px 16px 0; text-align: center; min-height: 0;
+  }
+  .ring {
+    width: 220px; height: 220px; border-radius: 50%; position: relative;
+    display: grid; place-items: center; margin-bottom: 20px;
+  }
+  .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .ring .mascot {
+    width: 120px; height: 120px; object-fit: contain; position: relative; z-index: 1;
+    filter: drop-shadow(0 10px 24px var(--flame-tint));
+  }
+  .imm-mascot {
+    width: 140px; height: 140px; object-fit: contain; margin-bottom: 28px; opacity: .92;
+  }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .2px; color: var(--text-3); margin-bottom: 6px; }
+  .headline { font-size: 24px; font-weight: 700; letter-spacing: -.3px; line-height: 1.3; }
+  .subline { font-size: 15px; font-weight: 500; color: var(--text-2); margin-top: 8px; line-height: 1.5; }
+  .duration {
+    font-size: 32px; font-weight: 700; letter-spacing: -.4px;
+    font-variant-numeric: tabular-nums; margin-top: 4px;
+  }
+  .goal-chip {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px; background: var(--overlay);
+    border: 1px solid var(--border-subtle); font-size: 12px; font-weight: 600; color: var(--text-2);
+  }
+  .goal-chip b { color: var(--accent-text); font-variant-numeric: tabular-nums; }
+  .cta-wrap { padding: 16px 16px 8px; flex-shrink: 0; }
+  .cta {
+    width: 100%; height: 52px; border: none; border-radius: 12px;
+    background: var(--flame); color: var(--on-accent);
+    font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .facts {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px 8px; border-top: 1px solid var(--border-subtle);
+    font-size: 13px; color: var(--text-3); flex-shrink: 0;
+  }
+  .facts strong { color: var(--text-2); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 6px; }
+  .facts a { color: var(--text-3); text-decoration: none; font-weight: 500; }
+  .nav {
+    height: calc(var(--nav-h) + var(--safe-b)); padding: 8px 8px var(--safe-b);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border-subtle); background: var(--bg); flex-shrink: 0;
+  }
+  .nav button {
+    appearance: none; border: none; background: transparent; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--text-3); font-size: 11px; font-weight: 600; cursor: pointer; padding: 6px;
+  }
+  .nav button.on { color: var(--accent-text); }
+  .nav .ico { width: 22px; height: 22px; opacity: .85; }
+  .notes {
+    width: min(420px, 100%); color: #c5cad1; font-size: 13px; line-height: 1.65;
+    background: #24262b; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px 18px;
+  }
+  .notes h3 { color: #fff; font-size: 14px; margin-bottom: 8px; }
+  .notes ul { padding-left: 18px; }
+  .notes li { margin: 6px 0; }
+  .notes code { font-size: 12px; background: #1a1b1e; padding: 1px 6px; border-radius: 4px; color: #FFA155; }
+
+  /* Immersion */
+  .imm-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .imm-tag { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; color: #3A3D42; text-transform: uppercase; margin-bottom: 24px; }
+  .imm-timer { font-size: 56px; font-weight: 600; letter-spacing: -1px; color: #3A3D42; font-variant-numeric: tabular-nums; }
+  .imm-meta { margin-top: 16px; font-size: 13px; color: #3A3D42; font-weight: 500; }
+  .imm-bar {
+    width: 180px; height: 3px; border-radius: 2px; background: #1a1a1a; margin-top: 28px; overflow: hidden;
+  }
+  .imm-bar > i { display: block; height: 100%; width: 62%; background: #C25A18; border-radius: 2px; opacity: .55; }
+  .imm-hint { position: absolute; bottom: 36px; left: 0; right: 0; text-align: center; font-size: 12px; color: #2a2c30; }
+
+  /* Store */
+  .section-h {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 4px 16px 12px;
+  }
+  .section-h h2 { font-size: 20px; font-weight: 600; letter-spacing: -.2px; }
+  .section-h span { font-size: 13px; color: var(--text-3); font-weight: 500; }
+  .tabs {
+    display: flex; gap: 6px; padding: 0 16px 14px; overflow-x: auto;
+  }
+  .tabs button {
+    appearance: none; border: 1px solid var(--border); background: transparent;
+    color: var(--text-2); border-radius: 999px; padding: 8px 14px;
+    font-size: 13px; font-weight: 600; font-family: inherit; white-space: nowrap; cursor: pointer;
+  }
+  .tabs button.on { background: var(--flame-tint); color: var(--accent-text); border-color: transparent; }
+  .store-scroll { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  .banner {
+    border-radius: 12px; padding: 16px; background: var(--raised);
+    border: 1px solid var(--border-subtle); box-shadow: var(--shadow); margin-bottom: 14px;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .banner .ico-box {
+    width: 48px; height: 48px; border-radius: 12px; background: var(--flame-tint);
+    display: grid; place-items: center; font-size: 22px;
+  }
+  .banner b { display: block; font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .banner p { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card {
+    background: var(--raised); border: 1px solid var(--border-subtle);
+    border-radius: 12px; padding: 12px; box-shadow: var(--shadow);
+  }
+  .card .thumb {
+    aspect-ratio: 1.2; border-radius: 8px; background: var(--overlay);
+    margin-bottom: 10px; display: grid; place-items: center; font-size: 28px;
+  }
+  .card .name { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 6px; }
+  .card .price {
+    font-size: 13px; font-weight: 600; color: var(--accent-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .card .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+    color: var(--text-3); margin-bottom: 6px;
+  }
+
+  /* Ranking */
+  .rank-list { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  .me-card {
+    background: var(--flame-tint); border: 1px solid transparent; border-radius: 12px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  }
+  .me-card .rank-n { font-size: 20px; font-weight: 700; color: var(--accent-text); width: 36px; font-variant-numeric: tabular-nums; }
+  .row {
+    display: flex; align-items: center; gap: 12px; padding: 12px 4px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .row:last-child { border-bottom: none; }
+  .row .n { width: 28px; font-size: 13px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .row .n.top { color: var(--accent-text); }
+  .row .av {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--overlay);
+    display: grid; place-items: center; font-size: 14px; font-weight: 700; color: var(--text-2);
+  }
+  .row .meta { flex: 1; min-width: 0; }
+  .row .meta b { display: block; font-size: 15px; font-weight: 600; }
+  .row .meta span { font-size: 12px; color: var(--text-3); }
+  .row .mins { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }
+
+  /* Records peek */
+  .rec-tabs { display: flex; gap: 0; padding: 0 8px; border-bottom: 1px solid var(--border-subtle); }
+  .rec-tabs button {
+    flex: 1; appearance: none; border: none; background: transparent; font-family: inherit;
+    padding: 12px 4px; font-size: 13px; font-weight: 600; color: var(--text-3); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .rec-tabs button.on { color: var(--text); border-bottom-color: var(--flame); }
+  .stat-big { padding: 20px 16px 8px; }
+  .stat-big .label { font-size: 13px; color: var(--text-3); font-weight: 500; }
+  .stat-big .val { font-size: 32px; font-weight: 700; letter-spacing: -.4px; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 16px 16px; }
+  .stat-tile {
+    background: var(--raised); border: 1px solid var(--border-subtle); border-radius: 12px;
+    padding: 14px; box-shadow: var(--shadow);
+  }
+  .stat-tile .k { font-size: 12px; color: var(--text-3); font-weight: 600; }
+  .stat-tile .v { font-size: 20px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding: 8px 20px 20px; }
+  .bars .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .bars .col i {
+    width: 100%; border-radius: 6px 6px 2px 2px; background: var(--flame);
+    opacity: .85; min-height: 4px;
+  }
+  .bars .col span { font-size: 11px; color: var(--text-3); font-weight: 600; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <h1 class="page-title">FocusCash Design v2.1 mockups</h1>
+  <p class="page-sub">
+    DS 토큰 그대로: flame 단일 액센트, 라이트 페이퍼 뉴트럴 / 다크 명도 계층, 4px 간격, hairline.
+    Claude 홈 목업의 “큰 원 + 마스코트 + 버튼” 골격은 유지하되, 정보 계층·빈 공간·상점/랭킹/몰입을 새로 맞춤.
+    파일: <code>design/v2.1-mockups.html</code> · 마스코트 <code>icon-gen/mascot_front.png</code>
+  </p>
+  <div class="toolbar">
+    <button type="button" data-screen="home" class="active">홈 · 시작 전</button>
+    <button type="button" data-screen="home-progress">홈 · 진행 중</button>
+    <button type="button" data-screen="immersion">몰입 타이머</button>
+    <button type="button" data-screen="records">기록 · 통계</button>
+    <button type="button" data-screen="store">상점</button>
+    <button type="button" data-screen="ranking">랭킹</button>
+    <span class="sep"></span>
+    <button type="button" id="themeBtn">다크 토글</button>
+  </div>
+
+  <div class="stage">
+    <div class="phone" id="phone">
+      <div class="status"><span>9:41</span><span>■■■ ▮</span></div>
+      <div class="screen" id="screen"></div>
+    </div>
+    <aside class="notes" id="notes"></aside>
+  </div>
+
+<script>
+const notes = {
+  home: `<h3>홈 · 시작 전</h3><ul>
+    <li>한 질문 유지: CTA는 <code>집중 시작</code> 하나.</li>
+    <li>링은 목표 대비 진행(0%) — 장식 원이 아니라 게이지.</li>
+    <li>푸터는 스트릭 / 이번 주 / 기록. 오늘 분은 시작 전에는 헤드카피로만.</li>
+    <li>크레딧은 우측 tabular — 폭 흔들림 없음.</li>
+  </ul>`,
+  "home-progress": `<h3>홈 · 진행 중</h3><ul>
+    <li>오늘 분을 display로, 목표는 칩으로 분리 (숫자 경쟁 줄임).</li>
+    <li>링 진행도 = today/goal. flame stroke만 사용.</li>
+    <li>이번 주가 오늘보다 작을 수 없음 — 집계 수정과 UX 카피가 맞물림.</li>
+  </ul>`,
+  immersion: `<h3>몰입 모드</h3><ul>
+    <li><code>voidBlack</code> + <code>textDim</code>만. 장식·네비 제거.</li>
+    <li>15초 무조작 후 진입하는 화면 — 정보 최소.</li>
+    <li>액센트도 dim 처리. “불꽃쇼” 금지.</li>
+  </ul>`,
+  records: `<h3>기록 · 통계</h3><ul>
+    <li>4탭(통계/캘린더/세션/메모) 중 통계.</li>
+    <li>주간 바는 Mon–Sun, 오늘 강조는 flame 불투명도만.</li>
+    <li>카드 2열: 누적·스트릭. 그림자는 라이트만.</li>
+  </ul>`,
+  store: `<h3>상점</h3><ul>
+    <li>보상 경제: 카테고리 칩 + 상품 그리드. 인디고/시안 금지.</li>
+    <li>상단 배너 1개로 룰렛/출석 진입 — 홈을 어지럽히지 않음.</li>
+    <li>가격은 accentText (라이트에선 flameDim).</li>
+  </ul>`,
+  ranking: `<h3>랭킹</h3><ul>
+    <li>기간 칩(일/주/월) + 내 순위 카드 고정.</li>
+    <li>완료 세션 기준 분 — 캘린더·주간과 동일 규칙.</li>
+    <li>1–3위만 accent, 나머지는 tertiary 숫자.</li>
+  </ul>`
+};
+
+function nav(active) {
+  const items = [
+    ["home","홈"],["store","상점"],["ranking","랭킹"],["profile","프로필"]
+  ];
+  return `<nav class="nav">${items.map(([id,label]) => {
+    const on = (active==="home" && id==="home") || active===id;
+    return `<button type="button" class="${on?"on":""}"><span class="ico">${icon(id)}</span>${label}</button>`;
+  }).join("")}</nav>`;
+}
+function icon(id){
+  const s='stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  if(id==="home") return `<svg class="ico" viewBox="0 0 24 24"><path ${s} d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>`;
+  if(id==="store") return `<svg class="ico" viewBox="0 0 24 24"><path ${s} d="M4 9h16l-1.2 10.2A2 2 0 0 1 16.81 21H7.19a2 2 0 0 1-1.99-1.8L4 9zm1-4h14l1 4H4l1-4z"/></svg>`;
+  if(id==="ranking") return `<svg class="ico" viewBox="0 0 24 24"><path ${s} d="M6 20V10m6 10V4m6 16v-7"/></svg>`;
+  return `<svg class="ico" viewBox="0 0 24 24"><circle ${s} cx="12" cy="8" r="3.5"/><path ${s} d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>`;
+}
+function ringSvg(pct){
+  const r=96, c=2*Math.PI*r, dash=Math.max(0,Math.min(1,pct))*c;
+  return `<svg viewBox="0 0 220 220" aria-hidden="true">
+    <circle cx="110" cy="110" r="${r}" fill="none" stroke="currentColor" stroke-width="6" opacity=".12"/>
+    <circle cx="110" cy="110" r="${r}" fill="none" stroke="var(--flame)" stroke-width="6"
+      stroke-linecap="round" stroke-dasharray="${dash} ${c}" opacity=".95"/>
+  </svg>`;
+}
+
+function render(screen){
+  const phone=document.getElementById("phone");
+  const el=document.getElementById("screen");
+  phone.classList.toggle("immersion", screen==="immersion");
+  document.getElementById("notes").innerHTML = notes[screen] || "";
+  if(screen==="home"){
+    el.innerHTML = `
+      <div class="topbar">
+        <div class="who"><span class="avatar">은</span>구글</div>
+        <div class="credits"><span class="dot"></span>101,869</div>
+      </div>
+      <div class="hero">
+        <div class="ring">${ringSvg(0)}<img class="mascot" src="icon-gen/mascot_front.png" alt=""/></div>
+        <div class="eyebrow">오늘 · 목표 4시간</div>
+        <div class="headline">오늘은 아직 시작 전이에요</div>
+        <p class="subline">짧게라도 불을 붙여 볼까요?</p>
+      </div>
+      <div class="cta-wrap"><button class="cta" type="button">집중 시작</button></div>
+      <div class="facts">
+        <div>스트릭<strong>1일</strong></div>
+        <div>이번 주<strong>0분</strong></div>
+        <a href="#">기록 →</a>
+      </div>
+      ${nav("home")}`;
+  } else if(screen==="home-progress"){
+    el.innerHTML = `
+      <div class="topbar">
+        <div class="who"><span class="avatar">은</span>구글</div>
+        <div class="credits"><span class="dot"></span>102,140</div>
+      </div>
+      <div class="hero">
+        <div class="ring">${ringSvg(0.45)}<img class="mascot" src="icon-gen/mascot_front.png" alt=""/></div>
+        <div class="eyebrow">오늘 집중</div>
+        <div class="duration">1시간 48분</div>
+        <div class="goal-chip">목표 <b>4시간</b> · 남은 2시간 12분</div>
+      </div>
+      <div class="cta-wrap"><button class="cta" type="button">이어서 집중</button></div>
+      <div class="facts">
+        <div>스트릭<strong>2일</strong></div>
+        <div>이번 주<strong>5시간 12분</strong></div>
+        <a href="#">기록 →</a>
+      </div>
+      ${nav("home")}`;
+  } else if(screen==="immersion"){
+    el.innerHTML = `
+      <div class="imm-body">
+        <img class="imm-mascot" src="icon-gen/mascot_immersion.png" alt=""/>
+        <div class="imm-tag">Focus</div>
+        <div class="imm-timer">24:18</div>
+        <div class="imm-meta">목표 50분 · 일반</div>
+        <div class="imm-bar"><i></i></div>
+      </div>
+      <div class="imm-hint">화면을 탭하면 컨트롤이 잠깐 보여요</div>`;
+  } else if(screen==="records"){
+    el.innerHTML = `
+      <div class="section-h"><h2>기록</h2><span>통계</span></div>
+      <div class="rec-tabs">
+        <button class="on" type="button">통계</button>
+        <button type="button">캘린더</button>
+        <button type="button">세션</button>
+        <button type="button">메모</button>
+      </div>
+      <div class="stat-big">
+        <div class="label">오늘</div>
+        <div class="val">1시간 48분</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="k">이번 주</div><div class="v">5시간 12분</div></div>
+        <div class="stat-tile"><div class="k">스트릭</div><div class="v">2일</div></div>
+      </div>
+      <div class="pad" style="padding-bottom:4px"><div class="eyebrow" style="text-align:left">요일별</div></div>
+      <div class="bars">
+        ${[["월",40],["화",70],["수",55],["목",90],["금",30],["토",15],["일",45]].map(([d,h])=>
+          `<div class="col"><i style="height:${h}%"></i><span>${d}</span></div>`).join("")}
+      </div>
+      ${nav("home")}`;
+  } else if(screen==="store"){
+    el.innerHTML = `
+      <div class="section-h"><h2>상점</h2><span>크레딧 101,869</span></div>
+      <div class="tabs">
+        <button class="on" type="button">전체</button>
+        <button type="button">기프티콘</button>
+        <button type="button">부스터</button>
+        <button type="button">꾸미기</button>
+      </div>
+      <div class="store-scroll">
+        <div class="banner">
+          <div class="ico-box">🎰</div>
+          <div><b>오늘의 룰렛</b><p>무료 1회 · 연속 출석 시 배수</p></div>
+        </div>
+        <div class="grid">
+          <div class="card"><div class="thumb">☕</div><span class="tag">CAFE</span><div class="name">아메리카노 교환권</div><div class="price">12,000 C</div></div>
+          <div class="card"><div class="thumb">🎧</div><span class="tag">BOOST</span><div class="name">집중 부스터 30분</div><div class="price">800 C</div></div>
+          <div class="card"><div class="thumb">🔥</div><span class="tag">THEME</span><div class="name">불꽃 테마 팩</div><div class="price">3,500 C</div></div>
+          <div class="card"><div class="thumb">🧁</div><span class="tag">CAFE</span><div class="name">디저트 교환권</div><div class="price">15,000 C</div></div>
+        </div>
+      </div>
+      ${nav("store")}`;
+  } else if(screen==="ranking"){
+    el.innerHTML = `
+      <div class="section-h"><h2>랭킹</h2><span>이번 주</span></div>
+      <div class="tabs">
+        <button type="button">오늘</button>
+        <button class="on" type="button">이번 주</button>
+        <button type="button">이번 달</button>
+      </div>
+      <div class="rank-list">
+        <div class="me-card">
+          <div class="rank-n">12</div>
+          <div class="av" style="width:40px;height:40px;border-radius:50%;background:var(--flame);color:var(--on-accent);display:grid;place-items:center;font-weight:700">은</div>
+          <div class="meta"><b>나</b><span>스트릭 2일</span></div>
+          <div class="mins">5시간 12분</div>
+        </div>
+        ${[
+          [1,"민수", "18시간 40분", true],
+          [2,"하늘", "14시간 5분", true],
+          [3,"지윤", "11시간 22분", true],
+          [4,"도윤", "9시간 10분", false],
+          [5,"서연", "8시간 45분", false],
+          [6,"하준", "7시간 30분", false],
+        ].map(([n,name,m,top])=>`
+          <div class="row">
+            <div class="n ${top?"top":""}">${n}</div>
+            <div class="av">${name[0]}</div>
+            <div class="meta"><b>${name}</b><span>집중러</span></div>
+            <div class="mins">${m}</div>
+          </div>`).join("")}
+      </div>
+      ${nav("ranking")}`;
+  }
+}
+
+document.querySelectorAll(".toolbar button[data-screen]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".toolbar button[data-screen]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    render(btn.dataset.screen);
+  });
+});
+document.getElementById("themeBtn").addEventListener("click", ()=>{
+  const root=document.documentElement;
+  root.dataset.theme = root.dataset.theme==="dark" ? "light" : "dark";
+});
+document.documentElement.dataset.theme = "light";
+render("home");
+</script>
+</body>
+</html>
