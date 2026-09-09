@@ -1,0 +1,133 @@
+{
+  "_comment": "클라이언트(lib/domain, AppConstants)와 서버(functions/src/rules.ts)가 같은 답을 내는지 검사하는 공용 케이스. 양쪽 테스트가 이 파일 하나를 읽는다. 숫자를 바꿀 때는 여기와 양쪽 구현을 함께 바꾼다.",
+  "constants": {
+    "creditsPerTenMinutes": 10,
+    "startAdBonus": 15,
+    "endAdMultiplierRate": 0.2,
+    "hardcoreBonusRate": 1.2,
+    "hardcorePenaltyRate": 0.1,
+    "dailyCreditCap": 250,
+    "firstFocusBonus": 200,
+    "referralBonus": 200,
+    "minFocusMinutes": 10,
+    "maxFocusMinutes": 120,
+    "focusXpPerMinute": 1,
+    "hardcoreXpMultiplier": 1.2,
+    "badgeXp": 50,
+    "checkInXp": 10,
+    "rouletteCost": 50,
+    "rouletteDailyLimit": 3
+  },
+  "sessionCredits": [
+    { "minutes": 9, "mode": "normal", "startAd": false, "expected": 0 },
+    { "minutes": 10, "mode": "normal", "startAd": false, "expected": 10 },
+    { "minutes": 59, "mode": "normal", "startAd": false, "expected": 50 },
+    { "minutes": 60, "mode": "normal", "startAd": false, "expected": 60 },
+    { "minutes": 120, "mode": "normal", "startAd": false, "expected": 120 },
+    { "minutes": 10, "mode": "hardcore", "startAd": false, "expected": 12 },
+    { "minutes": 50, "mode": "hardcore", "startAd": false, "expected": 60 },
+    { "minutes": 25, "mode": "hardcore", "startAd": false, "expected": 24 },
+    { "minutes": 30, "mode": "normal", "startAd": true, "expected": 45 },
+    { "minutes": 120, "mode": "hardcore", "startAd": true, "expected": 159 }
+  ],
+  "endAdBonus": [
+    { "earned": 60, "expected": 12 },
+    { "earned": 12, "expected": 2 },
+    { "earned": 0, "expected": 0 },
+    { "earned": 159, "expected": 32 },
+    { "earned": 7, "expected": 1 }
+  ],
+  "dailyCap": [
+    { "today": 100, "amount": 60, "cap": 250, "expected": 60 },
+    { "today": 220, "amount": 60, "cap": 250, "expected": 30 },
+    { "today": 250, "amount": 60, "cap": 250, "expected": 0 },
+    { "today": 300, "amount": 60, "cap": 250, "expected": 0 },
+    { "today": 9999, "amount": 60, "cap": null, "expected": 60 }
+  ],
+  "hardcorePenalty": [
+    { "total": 1000, "expected": 100 },
+    { "total": 4, "expected": 0 },
+    { "total": 5, "expected": 1 },
+    { "total": 0, "expected": 0 },
+    { "total": 6505, "expected": 651 }
+  ],
+  "xpForSession": [
+    { "minutes": 30, "hardcore": false, "expected": 30 },
+    { "minutes": 30, "hardcore": true, "expected": 36 },
+    { "minutes": 25, "hardcore": true, "expected": 30 },
+    { "minutes": 120, "hardcore": true, "expected": 144 }
+  ],
+  "levelTable": [
+    { "level": 1, "xp": 0 },
+    { "level": 2, "xp": 125 },
+    { "level": 5, "xp": 500 },
+    { "level": 6, "xp": 700 },
+    { "level": 10, "xp": 1500 },
+    { "level": 11, "xp": 1750 },
+    { "level": 20, "xp": 4000 },
+    { "level": 30, "xp": 8000 },
+    { "level": 50, "xp": 20000 },
+    { "level": 51, "xp": 21000 }
+  ],
+  "streak": [
+    { "today": "2026-09-09", "last": "2026-09-08", "current": 4, "longest": 10, "expectedCurrent": 5, "expectedLongest": 10, "counted": true },
+    { "today": "2026-09-09", "last": "2026-09-07", "current": 4, "longest": 4, "expectedCurrent": 1, "expectedLongest": 4, "counted": true },
+    { "today": "2026-09-09", "last": "2026-09-09", "current": 4, "longest": 4, "expectedCurrent": 4, "expectedLongest": 4, "counted": false },
+    { "today": "2026-09-09", "last": null, "current": 0, "longest": 0, "expectedCurrent": 1, "expectedLongest": 1, "counted": true },
+    { "today": "2026-10-01", "last": "2026-09-30", "current": 1, "longest": 1, "expectedCurrent": 2, "expectedLongest": 2, "counted": true },
+    { "today": "2027-01-01", "last": "2026-12-31", "current": 9, "longest": 9, "expectedCurrent": 10, "expectedLongest": 10, "counted": true },
+    { "today": "2026-03-01", "last": "2026-02-28", "current": 6, "longest": 6, "expectedCurrent": 7, "expectedLongest": 7, "counted": true }
+  ],
+  "badges": [
+    {
+      "name": "첫 세션 + 7일 스트릭, 이미 가진 streak_7 은 제외",
+      "input": { "totalMinutesBefore": 0, "actualMinutes": 30, "streakAfter": 7, "hardcoreCountAfter": 0, "todayMinutesBefore": 0, "startedAtHourLocal": 14, "oldLevel": 1, "newLevel": 1, "existingBadges": ["streak_7"] },
+      "expected": ["first_focus"]
+    },
+    {
+      "name": "누적 600분·6000분 동시 도달",
+      "input": { "totalMinutesBefore": 5990, "actualMinutes": 10, "streakAfter": 1, "hardcoreCountAfter": 0, "todayMinutesBefore": 0, "startedAtHourLocal": 14, "oldLevel": 3, "newLevel": 3, "existingBadges": [] },
+      "expected": ["focus_10h", "focus_100h"]
+    },
+    {
+      "name": "새벽 5시 시작 = early_bird, 자정 시작 = night_owl+early_bird",
+      "input": { "totalMinutesBefore": 100, "actualMinutes": 10, "streakAfter": 1, "hardcoreCountAfter": 0, "todayMinutesBefore": 0, "startedAtHourLocal": 0, "oldLevel": 3, "newLevel": 3, "existingBadges": [] },
+      "expected": ["early_bird", "night_owl"]
+    },
+    {
+      "name": "23시 시작은 night_owl 만",
+      "input": { "totalMinutesBefore": 100, "actualMinutes": 10, "streakAfter": 1, "hardcoreCountAfter": 0, "todayMinutesBefore": 0, "startedAtHourLocal": 23, "oldLevel": 3, "newLevel": 3, "existingBadges": [] },
+      "expected": ["night_owl"]
+    },
+    {
+      "name": "하루 120분 + 하드코어 10회 + 레벨 5 도달",
+      "input": { "totalMinutesBefore": 100, "actualMinutes": 60, "streakAfter": 1, "hardcoreCountAfter": 10, "todayMinutesBefore": 60, "startedAtHourLocal": 14, "oldLevel": 4, "newLevel": 5, "existingBadges": [] },
+      "expected": ["hardcore_10", "full_day", "level_5"]
+    },
+    {
+      "name": "레벨 4→12 는 level_5 와 level_10 둘 다",
+      "input": { "totalMinutesBefore": 100, "actualMinutes": 10, "streakAfter": 30, "hardcoreCountAfter": 0, "todayMinutesBefore": 0, "startedAtHourLocal": 14, "oldLevel": 4, "newLevel": 12, "existingBadges": ["streak_7"] },
+      "expected": ["streak_30", "level_5", "level_10"]
+    },
+    {
+      "name": "아무 조건도 안 맞으면 빈 목록",
+      "input": { "totalMinutesBefore": 100, "actualMinutes": 10, "streakAfter": 2, "hardcoreCountAfter": 1, "todayMinutesBefore": 0, "startedAtHourLocal": 14, "oldLevel": 3, "newLevel": 3, "existingBadges": [] },
+      "expected": []
+    }
+  ],
+  "weightedPick": [
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": 0, "expected": 0 },
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": 54, "expected": 0 },
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": 55, "expected": 1 },
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": 99, "expected": 5 },
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": 100, "expected": null },
+    { "weights": [55, 25, 10, 6, 3, 1], "roll": -1, "expected": null }
+  ],
+  "versionGate": [
+    { "current": 3, "min": 4, "latest": 5, "expected": "required" },
+    { "current": 4, "min": 4, "latest": 5, "expected": "recommended" },
+    { "current": 5, "min": 4, "latest": 5, "expected": "none" },
+    { "current": 9, "min": 4, "latest": 5, "expected": "none" },
+    { "current": 0, "min": 0, "latest": 0, "expected": "none" }
+  ]
+}

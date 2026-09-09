@@ -1,10 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import '../config/app_config.dart';
 import '../config/constants.dart';
 import '../domain/credit_rules.dart';
 import '../domain/streak_rules.dart';
 import '../models/credit_transaction.dart';
 
+/// 크레딧 원장 접근.
+///
+/// **쓰기 메서드([addCredits]·[spendCredits]·[applyPenalty])는 서버 이관 전용 과도기 코드다.**
+/// 서버 스위치(`AppConfig.useServerSettlement` + `useServerStore`)가 모두 켜지면 호출처가 없어야 하고,
+/// 그 상태에서 호출되면 [StateError] 로 즉시 드러낸다. 규칙 v2 가 배포되면 Firestore 가
+/// permission-denied 로 막지만, 배포 전에 코드 경로에서 잡는 것이 목적이다.
+/// 이관이 끝나면 이 세 메서드와 [_assertClientWritesAllowed] 를 지운다 (docs/SERVER_MIGRATION.md 5단계).
 class CreditService {
   /// 테스트에서 가짜 인스턴스를 주입할 수 있게 지연 초기화한다.
   /// (`FirebaseFirestore.instance` 를 필드 초기화에서 바로 잡으면 Firebase 미초기화 환경에서 생성 자체가 실패한다)
@@ -26,7 +34,16 @@ class CreditService {
         watchedStartAd: watchedStartAd,
       );
 
-  /// 크레딧 지급. 실제 지급된 양을 돌려준다.
+  static void _assertClientWritesAllowed(String method) {
+    if (!AppConfig.clientBalanceWritesAllowed) {
+      throw StateError(
+        'CreditService.$method: 서버 이관 모드에서는 클라이언트가 잔액을 쓸 수 없습니다. '
+        'ServerApi 를 사용하세요.',
+      );
+    }
+  }
+
+  /// 크레딧 지급. 실제 지급된 양을 돌려준다. (과도기 — 서버 모드에서는 호출 금지)
   ///
   /// [dailyCap] 을 주면 오늘 적립량(`todayCredits`)과 합쳐 한도를 넘는 부분은 잘라낸다.
   /// 집중·광고 보너스처럼 약관상 일일 한도(250)에 묶이는 지급에만 넘기고,
@@ -37,6 +54,7 @@ class CreditService {
     required String description,
     int? dailyCap,
   }) async {
+    _assertClientWritesAllowed('addCredits');
     if (amount <= 0) return 0;
     final userRef = _firestore.collection('users').doc(userId);
 
@@ -88,11 +106,13 @@ class CreditService {
     });
   }
 
+  /// 크레딧 차감. 잔액 부족이면 false. (과도기 — 서버 모드에서는 호출 금지)
   Future<bool> spendCredits({
     required String userId,
     required int amount,
     required String description,
   }) async {
+    _assertClientWritesAllowed('spendCredits');
     final userRef = _firestore.collection('users').doc(userId);
 
     return _firestore.runTransaction<bool>((transaction) async {
@@ -122,10 +142,12 @@ class CreditService {
     });
   }
 
+  /// 하드코어 포기 페널티. (과도기 — 서버 모드에서는 abandonSession 이 처리)
   Future<int> applyPenalty({
     required String userId,
     required double penaltyRate,
   }) async {
+    _assertClientWritesAllowed('applyPenalty');
     final userRef = _firestore.collection('users').doc(userId);
 
     return _firestore.runTransaction<int>((transaction) async {
@@ -156,6 +178,7 @@ class CreditService {
     });
   }
 
+  /// 원장 조회. 서버·클라이언트 어느 쪽이 쓴 항목이든 같은 컬렉션이다.
   Future<List<CreditTransaction>> getTransactionHistory(String userId,
       {int limit = 50}) async {
     final snapshot = await _firestore

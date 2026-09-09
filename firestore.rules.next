@@ -145,5 +145,13 @@ service cloud.firestore {
         && noteId.matches(request.auth.uid + '_.*')
         && (request.method == 'delete' || incoming().userId == request.auth.uid);
     }
+
+    // ── app_config ──────────────────────────────────────────
+    // 최소 지원 버전 등 앱 시작 시 읽는 설정. 로그인 전에 읽으므로 인증 없이 읽기 허용.
+    // 문서: app_config/android { minBuildNumber, latestBuildNumber, storeUrl?, message? }
+    match /app_config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

@@ -1,11 +1,12 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { db, REGION, requireUid, requireString, ledgerEntry, Timestamp } from "./common";
+import { db, REGION, requireUid, requireString, ledgerEntry, isoLocal, Timestamp } from "./common";
 import {
   Economy,
   applyDailyCap,
   computeStreak,
   dateKey,
   evaluateBadges,
+  hardcorePenalty,
   levelFromXp,
   sessionCredits,
   xpForSession,
@@ -20,8 +21,11 @@ import {
  *    기기 시각 조작 감지 휴리스틱이 필요 없어진다.
  *  - 세션 id 로 멱등하다. 같은 세션을 두 번 정산할 수 없다 (settledAt 플래그).
  *
+ * 한 트랜잭션에서 처리하는 것: 크레딧(일일 한도) · 통계 · 스트릭 · XP · 배지 ·
+ * 첫 집중 보너스 · 친구 초대 보너스(피초대자 첫 완료 시 양쪽 지급 + 초대자 invite_3 배지).
+ *
  * 입력: { sessionId }
- * 출력: { credits, firstFocusBonus, xpGained, badgeXpGained, oldLevel, newLevel, newBadges, currentStreak }
+ * 출력: { credits, firstFocusBonus, referralBonus, xpGained, badgeXpGained, oldLevel, newLevel, newBadges, currentStreak }
  */
 export const settleSession = onCall({ region: REGION }, async (req) => {
   const uid = requireUid(req);
@@ -39,6 +43,7 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
     const s = sessionSnap.data()!;
     if (s.userId !== uid) throw new HttpsError("permission-denied", "본인 세션만 정산할 수 있습니다.");
     if (s.settledAt) throw new HttpsError("already-exists", "이미 정산된 세션입니다.");
+    if (s.endedAt) throw new HttpsError("failed-precondition", "이미 종료(포기)된 세션입니다.");
 
     const startedAt: Date = (s.startedAt as Timestamp).toDate();
     const now = new Date();
@@ -57,6 +62,13 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
 
     const u = userSnap.data()!;
     const todayKey = dateKey(now);
+
+    // ── 친구 초대 보너스 대상이면 초대자 문서도 읽는다 (쓰기 전에 읽기 완료) ──
+    const invitedBy = typeof u.invitedBy === "string" ? u.invitedBy : "";
+    const referralEligible = invitedBy.length > 0 && invitedBy !== uid && !u.inviteBonusGiven;
+    const inviterRef = referralEligible ? db.collection("users").doc(invitedBy) : null;
+    const inviterSnap = inviterRef ? await tx.get(inviterRef) : null;
+    const referralBonus = inviterSnap?.exists ? Economy.referralBonus : 0;
 
     // ── 크레딧 (일일 한도) ────────────────────────────────
     const base = sessionCredits(actualMinutes, hardcore ? "hardcore" : "normal", Boolean(s.watchedStartAd));
@@ -99,7 +111,7 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
     // ── 첫 집중 보너스 (구 가입 보너스) ─────────────────────
     const firstFocusBonus = totalBefore === 0 && !u.firstFocusBonusGiven ? Economy.firstFocusBonus : 0;
 
-    const totalCreditsAfter = Number(u.totalCredits ?? 0) + credits + firstFocusBonus;
+    const totalCreditsAfter = Number(u.totalCredits ?? 0) + credits + firstFocusBonus + referralBonus;
 
     tx.update(sessionRef, {
       actualMinutes,
@@ -116,7 +128,7 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
       totalFocusMinutes: totalBefore + actualMinutes,
       todayFocusMinutes: todayMinutesBefore + actualMinutes,
       focusDate: todayKey,
-      lastActiveAt: now.toISOString(),
+      lastActiveAt: isoLocal(now),
       currentStreak: streak.currentStreak,
       longestStreak: streak.longestStreak,
       lastFocusDate: todayKey,
@@ -125,6 +137,7 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
       ...(newBadges.length ? { badges: [...existingBadges, ...newBadges] } : {}),
       ...(hardcore ? { hardcoreSessionCount: hardcoreAfter } : {}),
       ...(firstFocusBonus ? { firstFocusBonusGiven: true } : {}),
+      ...(referralBonus ? { inviteBonusGiven: true } : {}),
     });
 
     if (credits > 0) {
@@ -136,10 +149,16 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
       const e = ledgerEntry(uid, firstFocusBonus, "earn", "첫 집중 완료 보너스");
       tx.set(db.collection("credit_transactions").doc(e.id), e);
     }
+    if (referralBonus > 0 && inviterRef && inviterSnap?.exists) {
+      const e = ledgerEntry(uid, referralBonus, "earn", "친구 초대 보너스");
+      tx.set(db.collection("credit_transactions").doc(e.id), e);
+      applyInviterReward(tx, inviterRef, inviterSnap.data()!, invitedBy);
+    }
 
     return {
       credits,
       firstFocusBonus,
+      referralBonus,
       xpGained,
       badgeXpGained,
       oldLevel,
@@ -147,6 +166,85 @@ export const settleSession = onCall({ region: REGION }, async (req) => {
       newBadges,
       currentStreak: streak.currentStreak,
     };
+  });
+});
+
+/**
+ * 초대자 보상: 크레딧 + inviteCount + (3명 도달 시) invite_3 배지·배지 XP.
+ * 클라이언트 XpService.onInviteSuccess 를 대체한다. 같은 트랜잭션 안에서 호출된다.
+ */
+function applyInviterReward(
+  tx: FirebaseFirestore.Transaction,
+  inviterRef: FirebaseFirestore.DocumentReference,
+  inviter: FirebaseFirestore.DocumentData,
+  inviterUid: string,
+) {
+  const inviteCount = Number(inviter.inviteCount ?? 0) + 1;
+  const badges: string[] = Array.isArray(inviter.badges) ? inviter.badges : [];
+  const earnsBadge = inviteCount >= Economy.inviteBadgeCount && !badges.includes("invite_3");
+  const xp = Number(inviter.xp ?? 0) + (earnsBadge ? Economy.badgeXp : 0);
+
+  tx.update(inviterRef, {
+    totalCredits: Number(inviter.totalCredits ?? 0) + Economy.referralBonus,
+    inviteCount,
+    ...(earnsBadge ? { badges: [...badges, "invite_3"], xp, level: levelFromXp(xp) } : {}),
+  });
+  const e = ledgerEntry(inviterUid, Economy.referralBonus, "earn", "친구 초대 보너스 (초대 성공)");
+  tx.set(db.collection("credit_transactions").doc(e.id), e);
+}
+
+/**
+ * 세션 포기 — 클라이언트의 FocusService.endSession(completed:false) + CreditService.applyPenalty 를 대체한다.
+ *
+ * 규칙 v2 에서 클라이언트는 세션에 "포기" 표시만 할 수 있고 잔액은 못 건드린다.
+ * 하드코어 페널티(잔액의 10%)는 여기서만 차감한다. 이미 정산·종료된 세션은 다시 포기할 수 없다.
+ *
+ * 입력: { sessionId, reason? }  출력: { penalty, actualMinutes }
+ */
+export const abandonSession = onCall({ region: REGION }, async (req) => {
+  const uid = requireUid(req);
+  const data = req.data as Record<string, unknown>;
+  const sessionId = requireString(data.sessionId, "sessionId", 64);
+  const reason = typeof data.reason === "string" ? data.reason.slice(0, 32) : "user";
+
+  const sessionRef = db.collection("focus_sessions").doc(sessionId);
+  const userRef = db.collection("users").doc(uid);
+
+  return db.runTransaction(async (tx) => {
+    const [sessionSnap, userSnap] = await Promise.all([tx.get(sessionRef), tx.get(userRef)]);
+    if (!sessionSnap.exists) throw new HttpsError("not-found", "세션이 없습니다.");
+    if (!userSnap.exists) throw new HttpsError("not-found", "사용자가 없습니다.");
+    const s = sessionSnap.data()!;
+    if (s.userId !== uid) throw new HttpsError("permission-denied", "본인 세션만 포기할 수 있습니다.");
+    if (s.settledAt) throw new HttpsError("already-exists", "이미 정산된 세션입니다.");
+    if (s.endedAt) return { penalty: 0, actualMinutes: Number(s.actualMinutes ?? 0), alreadyEnded: true };
+
+    const now = new Date();
+    const startedAt: Date = (s.startedAt as Timestamp).toDate();
+    const targetMinutes = Number(s.targetMinutes) || 0;
+    const elapsed = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60_000));
+    const actualMinutes = Math.min(elapsed, targetMinutes);
+
+    tx.update(sessionRef, {
+      actualMinutes,
+      creditsEarned: 0,
+      completed: false,
+      endedAt: Timestamp.fromDate(now),
+      abandonReason: reason,
+    });
+
+    let penalty = 0;
+    if (s.hardcoreMode === "hardcore") {
+      const u = userSnap.data()!;
+      const balance = Number(u.totalCredits ?? 0);
+      penalty = hardcorePenalty(balance);
+      if (penalty > 0) {
+        tx.update(userRef, { totalCredits: balance - penalty });
+        const e = ledgerEntry(uid, -penalty, "penalty", "하드코어 모드 페널티");
+        tx.set(db.collection("credit_transactions").doc(e.id), e);
+      }
+    }
+    return { penalty, actualMinutes, alreadyEnded: false };
   });
 });
 

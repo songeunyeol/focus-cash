@@ -56,7 +56,14 @@ class FocusProvider extends ChangeNotifier {
   bool _sawPauseSinceLastTick = false;
   int _earnedCredits = 0;
   int _firstFocusBonus = 0;
+  int _referralBonus = 0;
+  int _lastPenalty = 0;
   SessionOutcome _outcome = SessionOutcome.empty;
+
+  /// Firestore 문서가 있는 세션인지. 시작 시 네트워크 실패로 `local-` id 를 받은 세션은
+  /// 서버가 모르는 세션이므로 어떤 서버 경로도 타지 않는다 (크레딧도 없다).
+  bool get _isServerSession =>
+      _currentSession != null && !_currentSession!.id.startsWith('local-');
 
   FocusState get state => _state;
   int get earnedXp => _outcome.xpGained + _outcome.badgeXpGained;
@@ -70,6 +77,12 @@ class FocusProvider extends ChangeNotifier {
 
   /// 이번 완료로 받은 첫 집중 보너스 (0 이면 해당 없음)
   int get firstFocusBonus => _firstFocusBonus;
+
+  /// 이번 완료로 받은 친구 초대 보너스 (서버 정산 모드에서만 채워진다. 0 이면 해당 없음)
+  int get referralBonus => _referralBonus;
+
+  /// 마지막 포기에서 차감된 하드코어 페널티 (0 이면 없음)
+  int get lastPenalty => _lastPenalty;
 
   /// 앱이 백그라운드로 내려갔음을 알린다. 화면의 라이프사이클 훅에서 호출한다.
   void onAppPaused() => _sawPauseSinceLastTick = true;
@@ -138,6 +151,8 @@ class FocusProvider extends ChangeNotifier {
     _elapsedSeconds = 0;
     _clockTampered = false;
     _firstFocusBonus = 0;
+    _referralBonus = 0;
+    _lastPenalty = 0;
     _outcome = SessionOutcome.empty;
     _lastTickAt = DateTime.now();
     _monotonic
@@ -176,6 +191,11 @@ class FocusProvider extends ChangeNotifier {
     final last = _lastTickAt;
     _lastTickAt = now;
     if (last == null) return;
+
+    // 서버 정산 모드에서는 서버 시각이 앵커다. 기기 시각을 바꿔도 settleSession 이
+    // "목표 시간이 아직 지나지 않았다"로 거절하므로 클라이언트 휴리스틱은 필요 없다.
+    // (오탐으로 정상 세션을 무효 처리하는 쪽이 더 큰 손해다)
+    if (AppConfig.useServerSettlement && _isServerSession) return;
 
     // 백그라운드를 거쳤다면 공백이 큰 게 정상이다. 한 번 건너뛴다.
     if (_sawPauseSinceLastTick) {
@@ -237,7 +257,7 @@ class FocusProvider extends ChangeNotifier {
       watchedStartAd: session.watchedStartAd,
     );
 
-    if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+    if (AppConfig.useServerSettlement && _isServerSession) {
       await _completeViaServer(session, actualMinutes);
       return;
     }
@@ -289,12 +309,14 @@ class FocusProvider extends ChangeNotifier {
   }
 
   /// 서버 정산 경로 (AppConfig.useServerSettlement). 서버가 경과 시간을 검증하고
-  /// 크레딧·XP·스트릭·배지·첫 집중 보너스를 한 번에 반영한다. 클라이언트는 결과를 보여주기만 한다.
+  /// 크레딧·XP·스트릭·배지·첫 집중 보너스·초대 보너스를 한 번에 반영한다.
+  /// 클라이언트는 결과를 보여주기만 한다. (초대 보너스 클라이언트 경로는 타지 않는다)
   Future<void> _completeViaServer(FocusSession session, int actualMinutes) async {
     try {
       final r = await _serverApi.settleSession(session.id);
       _earnedCredits = r.credits;
       _firstFocusBonus = r.firstFocusBonus;
+      _referralBonus = r.referralBonus;
       _outcome = SessionOutcome(
         xpGained: r.xpGained,
         badgeXpGained: r.badgeXpGained,
@@ -318,7 +340,6 @@ class FocusProvider extends ChangeNotifier {
     _state = FocusState.completed;
     notifyListeners();
     await _clearPersistedSession();
-    _maybeGiveReferralBonus(session.userId);
     _updateNotifications(session.userId, _earnedCredits, actualMinutes);
     unawaited(AnalyticsService.instance.sessionComplete(
       actualMinutes: actualMinutes,
@@ -367,6 +388,8 @@ class FocusProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// 친구 초대 보너스 — 클라이언트 정산 경로 전용 (과도기).
+  /// 서버 정산 모드에서는 settleSession 이 같은 트랜잭션에서 지급하므로 호출하지 않는다.
   Future<void> _maybeGiveReferralBonus(String userId) async {
     try {
       final db = FirebaseFirestore.instance;
@@ -403,7 +426,7 @@ class FocusProvider extends ChangeNotifier {
 
     int granted = AppConstants.startAdBonus;
     try {
-      if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+      if (AppConfig.useServerSettlement && _isServerSession) {
         granted = await _serverApi.grantAdBonus(session.id, 'start');
         _earnedCredits += granted;
         notifyListeners();
@@ -432,7 +455,7 @@ class FocusProvider extends ChangeNotifier {
 
     int granted = bonus;
     try {
-      if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+      if (AppConfig.useServerSettlement && _isServerSession) {
         granted = await _serverApi.grantAdBonus(session.id, 'end');
         _earnedCredits += granted;
         notifyListeners();
@@ -467,23 +490,37 @@ class FocusProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final (updated, _) = await _focusService
-          .endSession(
-            session: session,
-            actualMinutes: actualMinutes,
-            creditsEarned: 0,
-            completed: false,
-          )
-          .timeout(const Duration(seconds: 5));
-      _currentSession = updated;
-
-      if (!nopenalty && session.hardcoreMode == 'hardcore') {
-        await _creditService
-            .applyPenalty(
-              userId: session.userId,
-              penaltyRate: AppConstants.hardcorePenaltyRate,
+      if (AppConfig.useServerSettlement && _isServerSession) {
+        // 서버가 포기 표시 + 하드코어 페널티를 한 트랜잭션으로 처리한다.
+        // nopenalty(시각 조작 등 클라이언트 판단)는 서버 모드에서 의미가 없다 — 서버 시각이 기준이다.
+        final r = await _serverApi
+            .abandonSession(session.id, reason: reason)
+            .timeout(const Duration(seconds: 8));
+        _lastPenalty = r.penalty;
+        _currentSession = session.copyWith(
+          actualMinutes: r.actualMinutes,
+          completed: false,
+          endedAt: DateTime.now(),
+        );
+      } else {
+        final (updated, _) = await _focusService
+            .endSession(
+              session: session,
+              actualMinutes: actualMinutes,
+              creditsEarned: 0,
+              completed: false,
             )
             .timeout(const Duration(seconds: 5));
+        _currentSession = updated;
+
+        if (!nopenalty && session.hardcoreMode == 'hardcore') {
+          _lastPenalty = await _creditService
+              .applyPenalty(
+                userId: session.userId,
+                penaltyRate: AppConstants.hardcorePenaltyRate,
+              )
+              .timeout(const Duration(seconds: 5));
+        }
       }
     } catch (e) {
       debugPrint('세션 포기 기록 실패: $e');
@@ -561,6 +598,8 @@ class FocusProvider extends ChangeNotifier {
       ..reset();
     _earnedCredits = 0;
     _firstFocusBonus = 0;
+    _referralBonus = 0;
+    _lastPenalty = 0;
     _outcome = SessionOutcome.empty;
     notifyListeners();
   }

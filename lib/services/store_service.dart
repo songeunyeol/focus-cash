@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../config/app_config.dart';
 import '../models/store_item.dart';
 import '../models/roulette_config.dart';
 import '../models/raffle_room.dart';
@@ -339,6 +340,9 @@ class StoreService {
     if (!alreadyHidden) updates['hiddenAt'] = DateTime.now().toIso8601String();
 
     await _db.collection('gifticon_codes').doc(docId).update(updates);
+
+    // 서버 모드에서는 onDeliverySubmitted 트리거가 알림을 보낸다 (토큰이 APK 에 없다).
+    if (AppConfig.useServerStore) return;
 
     final doc = await _db.collection('gifticon_codes').doc(docId).get();
     final data = doc.data() ?? {};

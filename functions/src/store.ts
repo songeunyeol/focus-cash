@@ -1,7 +1,7 @@
 import { randomInt } from "node:crypto";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { db, REGION, requireUid, requireString, requireInt, ledgerEntry, Timestamp } from "./common";
-import { dateKey, pickWeightedIndex } from "./rules";
+import { db, REGION, requireUid, requireString, requireInt, ledgerEntry, isoLocal, Timestamp } from "./common";
+import { Economy, dateKey, pickWeightedIndex } from "./rules";
 
 /**
  * 기프티콘 교환 — 잔액 확인 + 차감 + 코드 1개 발급을 한 트랜잭션으로.
@@ -50,7 +50,7 @@ export const redeemGifticon = onCall({ region: REGION }, async (req) => {
 
         const now = Timestamp.now();
         tx.update(userRef, { totalCredits: balance - cost });
-        tx.update(candidate.ref, { isUsed: true, usedBy: uid, usedAt: now.toDate().toISOString() });
+        tx.update(candidate.ref, { isUsed: true, usedBy: uid, usedAt: isoLocal(now.toDate()) });
         const e = ledgerEntry(uid, -cost, "spend", `${itemSnap.data()!.name} 교환`);
         tx.set(db.collection("credit_transactions").doc(e.id), e);
 
@@ -81,7 +81,7 @@ export const spinRoulette = onCall({ region: REGION }, async (req) => {
   if (!configSnap.exists) throw new HttpsError("failed-precondition", "룰렛이 준비 중입니다.");
   const config = configSnap.data()!;
   const cost = Number(config.cost);
-  const dailyLimit = Number(config.dailySpinLimit ?? 3);
+  const dailyLimit = Number(config.dailySpinLimit ?? Economy.rouletteDailyLimit);
   const prizes: Array<{ name: string; credits: number; probability: number; gifticonStoreItemId?: string | null; imageBase64?: string }> =
     config.prizes ?? [];
 
@@ -135,12 +135,12 @@ export const spinRoulette = onCall({ region: REGION }, async (req) => {
         .get();
       if (codeSnap.empty) {
         // 방금 소진 → 100 크레딧 대체 (클라이언트 정책과 동일)
-        newBalance += 100;
-        const e = ledgerEntry(uid, 100, "earn", "룰렛 기프티콘 재고 부족 보상");
+        newBalance += Economy.rouletteStockFallbackCredits;
+        const e = ledgerEntry(uid, Economy.rouletteStockFallbackCredits, "earn", "룰렛 기프티콘 재고 부족 보상");
         tx.set(db.collection("credit_transactions").doc(e.id), e);
       } else {
         const codeDoc = codeSnap.docs[0];
-        tx.update(codeDoc.ref, { isUsed: true, usedBy: uid, usedAt: new Date().toISOString() });
+        tx.update(codeDoc.ref, { isUsed: true, usedBy: uid, usedAt: isoLocal() });
         gifticon = { id: codeDoc.id, ...codeDoc.data(), isUsed: true, usedBy: uid };
       }
     } else {
@@ -156,8 +156,8 @@ export const spinRoulette = onCall({ region: REGION }, async (req) => {
         imageBase64: prize.imageBase64 ?? "",
         isUsed: true,
         usedBy: uid,
-        usedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+        usedAt: isoLocal(),
+        createdAt: isoLocal(),
         prizeType: "roulette",
       });
     }
@@ -211,13 +211,13 @@ export const enterRaffle = onCall({ region: REGION }, async (req) => {
         userId: uid,
         roomId,
         ticketCount: (entrySnap.exists ? Number(entrySnap.data()!.ticketCount ?? 0) : 0) + actual,
-        updatedAt: new Date().toISOString(),
+        updatedAt: isoLocal(),
       },
       { merge: true },
     );
     tx.update(roomRef, {
       currentCreditsPool: newPool,
-      ...(closed ? { isActive: false, closedAt: new Date().toISOString() } : {}),
+      ...(closed ? { isActive: false, closedAt: isoLocal() } : {}),
     });
     return { actualTickets: actual, closed, totalPool, prize: room.prize, prizeType: room.prizeType ?? "manual", prizeImageBase64: room.prizeImageBase64 ?? "", title: room.title };
   });
@@ -235,7 +235,7 @@ export const enterRaffle = onCall({ region: REGION }, async (req) => {
   const winnerName = (winnerSnap.data()?.displayName as string | undefined) || "집중러";
   await roomRef.update({ winner: winnerId, winnerName });
 
-  const now = new Date().toISOString();
+  const now = isoLocal();
   const docId = `raffle_${roomId}_${winnerId}`;
   await db.collection("gifticon_codes").doc(docId).set({
     id: docId,

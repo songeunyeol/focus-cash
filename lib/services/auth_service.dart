@@ -2,20 +2,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
-import '../config/app_config.dart';
 import '../models/user_model.dart';
 import 'server_api.dart';
 
 class AuthService {
-  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-      : _injectedAuth = auth,
-        _injectedDb = firestore;
+  AuthService({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+    ServerApi? serverApi,
+  })  : _injectedAuth = auth,
+        _injectedDb = firestore,
+        _injectedApi = serverApi;
 
   final FirebaseAuth? _injectedAuth;
   final FirebaseFirestore? _injectedDb;
+  final ServerApi? _injectedApi;
   late final FirebaseAuth _auth = _injectedAuth ?? FirebaseAuth.instance;
   late final FirebaseFirestore _firestore =
       _injectedDb ?? FirebaseFirestore.instance;
+  late final ServerApi _serverApi = _injectedApi ?? ServerApi();
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -38,7 +43,13 @@ class AuthService {
   }
 
   // ───────────────────────────────────────────
-  // 카카오 로그인
+  // 카카오 로그인 — 서버 검증 경로만 있다.
+  //
+  // 이전에는 `kakao_{id}@focuscash.app` / `FCS2024_K_{id}` 이메일·비밀번호를 클라이언트가
+  // 만들어 썼다. 카카오 ID 만 알면 그 계정으로 로그인되는 구조라 제거했다.
+  // 서버(kakaoSignIn)는 카카오 토큰을 카카오 API 로 검증한 뒤 custom token 을 만들고,
+  // 구 이메일 계정이 있으면 같은 uid 로 발급해 데이터가 유지된다.
+  // → Functions 배포 전에는 카카오 로그인이 동작하지 않는다 (docs/SERVER_MIGRATION.md).
   // ───────────────────────────────────────────
   Future<UserCredential?> signInWithKakao() async {
     // 카카오톡 설치 여부에 따라 분기
@@ -46,41 +57,8 @@ class AuthService {
         ? await UserApi.instance.loginWithKakaoTalk()
         : await UserApi.instance.loginWithKakaoAccount();
 
-    if (AppConfig.useServerKakaoAuth) {
-      // 서버가 카카오 토큰을 검증하고 custom token 을 만든다.
-      // 아래 이메일/비밀번호 방식은 카카오 ID 만 알면 타인 계정에 들어갈 수 있는 구조였다.
-      final r = await ServerApi().kakaoSignIn(kakaoToken.accessToken);
-      return _auth.signInWithCustomToken(r.token);
-    }
-
-    // 카카오 사용자 정보 조회
-    final kakaoUser = await UserApi.instance.me();
-    final kakaoId = kakaoUser.id;
-    final kakaoName =
-        kakaoUser.kakaoAccount?.profile?.nickname ?? '카카오 유저';
-
-    // 카카오 ID로 Firebase 이메일/비밀번호 생성 (서버 없는 방식)
-    final email = 'kakao_$kakaoId@focuscash.app';
-    final password = 'FCS2024_K_$kakaoId';
-
-    try {
-      // 기존 유저 로그인
-      return await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      // user-not-found 또는 invalid-credential → 신규 유저로 처리
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-        final userCredential = await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-        await userCredential.user?.updateDisplayName(kakaoName);
-        return userCredential;
-      }
-      rethrow;
-    }
+    final r = await _serverApi.kakaoSignIn(kakaoToken.accessToken);
+    return _auth.signInWithCustomToken(r.token);
   }
 
   // 신규 유저 여부 확인 (Firestore 문서 없으면 신규)
@@ -117,9 +95,11 @@ class AuthService {
         inviterUid = snap.docs.first.data()['uid'] as String? ?? '';
       }
     }
+    // 자기 자신을 초대자로 넣는 것은 막는다 (초대 보너스 이중 수령 방지)
+    if (inviterUid == user.uid) inviterUid = '';
 
     // 가입 보너스는 여기서 주지 않는다. 탈퇴→재가입으로 무한 파밍되던 구멍이라
-    // 첫 집중 완료 시점(FocusProvider)에 [AppConstants.firstFocusBonus] 로 지급한다.
+    // 첫 집중 완료 시점(FocusProvider / settleSession)에 [AppConstants.firstFocusBonus] 로 지급한다.
     final userModel = UserModel(
       uid: user.uid,
       phoneNumber: user.phoneNumber ?? '',
@@ -187,6 +167,7 @@ class AuthService {
   /// 유효하므로 뒤따르는 Firestore 정리는 통과한다.
   ///
   /// 개인정보는 남기지 않는다 — 특히 gifticon_codes 의 배송지·연락처와 user_notes.
+  /// (서버 onUserDeleted 트리거가 같은 정리를 한 번 더 하므로, 여기서 일부가 실패해도 마무리된다)
   Future<void> deleteAccount() async {
     final user = currentUser;
     if (user == null) return;

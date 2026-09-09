@@ -3,6 +3,10 @@
  *
  * 숫자를 바꾸면 양쪽을 같이 바꿔야 한다. 클라이언트는 "예상치"를 보여주기 위해,
  * 서버는 "실제 지급"을 위해 같은 규칙을 쓴다. 서버 값이 항상 진실이다.
+ *
+ * 두 구현이 같은 답을 내는지는 `test/fixtures/economy_rules.json` 하나를
+ * Dart(`test/domain/economy_parity_test.dart`)와 TS(`src/parity.test.ts`)가 같이 읽어 검사한다.
+ * 케이스를 추가할 때도 그 파일에만 넣으면 된다.
  */
 
 export const Economy = {
@@ -20,6 +24,12 @@ export const Economy = {
   hardcoreXpMultiplier: 1.2,
   badgeXp: 50,
   checkInXp: 10,
+  rouletteCost: 50,
+  rouletteDailyLimit: 3,
+  /** 룰렛 기프티콘 재고가 방금 소진됐을 때 대체 지급 (클라이언트 정책과 동일) */
+  rouletteStockFallbackCredits: 100,
+  /** invite_3 배지 기준 */
+  inviteBadgeCount: 3,
 } as const;
 
 export type HardcoreMode = "normal" | "hardcore";
@@ -45,6 +55,12 @@ export function applyDailyCap(todayCredits: number, amount: number, cap: number 
   const room = cap - todayCredits;
   if (room <= 0) return 0;
   return Math.min(amount, room);
+}
+
+/** 하드코어 포기 페널티. 보유 잔액 비례, 0 이상. */
+export function hardcorePenalty(totalCredits: number): number {
+  const p = Math.round(totalCredits * Economy.hardcorePenaltyRate);
+  return p > 0 ? p : 0;
 }
 
 export function xpForSession(actualMinutes: number, isHardcore: boolean): number {
@@ -143,4 +159,21 @@ export function pickWeightedIndex(weights: number[], roll: number): number | nul
     if (roll < cumulative) return i;
   }
   return null;
+}
+
+// ── 앱 버전 게이트 (version_gate.dart) ───────────────────────────────────
+export type UpdateRequirement = "none" | "recommended" | "required";
+
+/**
+ * 규칙 v2 배포 뒤 구버전 앱은 정산이 permission-denied 로 실패한다.
+ * `app_config/android` 문서의 minBuildNumber 미만이면 강제 업데이트, latestBuildNumber 미만이면 권장.
+ */
+export function evaluateVersionGate(
+  currentBuild: number,
+  minBuild: number,
+  latestBuild: number,
+): UpdateRequirement {
+  if (currentBuild < minBuild) return "required";
+  if (currentBuild < latestBuild) return "recommended";
+  return "none";
 }

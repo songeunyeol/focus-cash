@@ -12,27 +12,42 @@ class ServerApi {
 
   final FirebaseFunctions _fn;
 
+  static const Duration _timeout = Duration(seconds: 15);
+
   Future<Map<String, dynamic>> _call(
       String name, Map<String, dynamic> data) async {
     final result = await _fn
         .httpsCallable(name,
-            options: HttpsCallableOptions(timeout: const Duration(seconds: 15)))
+            options: HttpsCallableOptions(timeout: _timeout))
         .call<Map<String, dynamic>>(data);
     return Map<String, dynamic>.from(result.data);
   }
 
-  /// 세션 정산. 서버가 경과 시간을 검증하고 크레딧·XP·스트릭·배지를 한 번에 반영한다.
+  /// 세션 정산. 서버가 경과 시간을 검증하고 크레딧·XP·스트릭·배지·초대 보너스를 한 번에 반영한다.
   Future<SettleResult> settleSession(String sessionId) async {
     final r = await _call('settleSession', {'sessionId': sessionId});
     return SettleResult(
       credits: r['credits'] as int? ?? 0,
       firstFocusBonus: r['firstFocusBonus'] as int? ?? 0,
+      referralBonus: r['referralBonus'] as int? ?? 0,
       xpGained: r['xpGained'] as int? ?? 0,
       badgeXpGained: r['badgeXpGained'] as int? ?? 0,
       oldLevel: r['oldLevel'] as int? ?? 0,
       newLevel: r['newLevel'] as int? ?? 0,
       newBadges: (r['newBadges'] as List<dynamic>?)?.cast<String>() ?? const [],
       currentStreak: r['currentStreak'] as int? ?? 0,
+    );
+  }
+
+  /// 세션 포기. 하드코어면 서버가 페널티를 차감한다. 차감액을 돌려준다.
+  Future<AbandonResult> abandonSession(String sessionId,
+      {String reason = 'user'}) async {
+    final r = await _call(
+        'abandonSession', {'sessionId': sessionId, 'reason': reason});
+    return AbandonResult(
+      penalty: r['penalty'] as int? ?? 0,
+      actualMinutes: r['actualMinutes'] as int? ?? 0,
+      alreadyEnded: r['alreadyEnded'] as bool? ?? false,
     );
   }
 
@@ -64,6 +79,7 @@ class SettleResult {
   const SettleResult({
     required this.credits,
     required this.firstFocusBonus,
+    required this.referralBonus,
     required this.xpGained,
     required this.badgeXpGained,
     required this.oldLevel,
@@ -74,10 +90,27 @@ class SettleResult {
 
   final int credits;
   final int firstFocusBonus;
+
+  /// 피초대자 첫 완료 시 본인에게 지급된 초대 보너스 (0 이면 해당 없음)
+  final int referralBonus;
   final int xpGained;
   final int badgeXpGained;
   final int oldLevel;
   final int newLevel;
   final List<String> newBadges;
   final int currentStreak;
+}
+
+class AbandonResult {
+  const AbandonResult({
+    required this.penalty,
+    required this.actualMinutes,
+    required this.alreadyEnded,
+  });
+
+  final int penalty;
+  final int actualMinutes;
+
+  /// 이미 종료된 세션이라 아무것도 바꾸지 않았음
+  final bool alreadyEnded;
 }

@@ -11,7 +11,9 @@ import 'config/routes.dart';
 import 'providers/auth_provider.dart';
 import 'providers/focus_provider.dart';
 import 'providers/theme_provider.dart';
+import 'screens/common/update_required_screen.dart';
 import 'services/ad_service.dart';
+import 'services/app_version_service.dart';
 import 'services/notification_service.dart';
 
 void main() async {
@@ -101,8 +103,21 @@ class _AppStartupState extends State<AppStartup> {
   }
 
   Future<void> _navigate() async {
+    // 버전 확인은 스플래시 대기와 병렬로. 실패하면 막지 않는다 (AppVersionService 참고).
+    final versionFuture = AppVersionService().check();
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
+
+    final version = await versionFuture;
+    if (!mounted) return;
+    if (version.isRequired) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => UpdateRequiredScreen(check: version),
+        ),
+      );
+      return;
+    }
 
     final authProvider = context.read<AuthProvider>();
 
