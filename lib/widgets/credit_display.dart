@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
+
+import '../design/ds.dart';
 
 class CreditDisplay extends StatelessWidget {
   final int credits;
@@ -18,26 +19,18 @@ class CreditDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DsColors c = context.ds;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.creditGold.withAlpha(25),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.creditGold.withAlpha(80)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Sp.x3, vertical: Sp.x1 + 2),
+      decoration: DsSurface.tint(c, c.flameTint, radius: R.rPill, border: true),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.monetization_on,
-              color: AppTheme.creditGold, size: 18),
-          const SizedBox(width: 4),
+        children: <Widget>[
+          Icon(Icons.monetization_on, color: c.flame, size: 16),
+          const SizedBox(width: Sp.x1),
           Text(
             _formatCredits(credits),
-            style: const TextStyle(
-              color: AppTheme.creditGold,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            style: DsType.label.on(c.accentText).tnum,
           ),
         ],
       ),
