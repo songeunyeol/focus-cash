@@ -269,6 +269,7 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
       text: isHour ? '$_hours' : '$_mins',
     );
 
+    try {
     await showDialog<void>(
       context: context,
       builder: (BuildContext ctx) {
@@ -323,6 +324,9 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
         );
       },
     );
+    } finally {
+      controller.dispose();
+    }
   }
 
   void _startFocus(BuildContext context, {required bool watchAd}) {

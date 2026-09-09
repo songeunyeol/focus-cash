@@ -54,6 +54,8 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
   Map<String, int> _gifticonStocks = <String, int>{};
   bool _stocksLoading = false;
   String _lastStockIdsKey = '';
+  Future<int>? _remainingFuture;
+  String _remainingKey = '';
 
   static const double _slotItemExtent = 68;
 
@@ -75,8 +77,22 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
 
   @override
   void dispose() {
+    _slotController.removeListener(_onSlotScroll);
     _slotController.dispose();
     super.dispose();
+  }
+
+  void _ensureRemaining(String uid, int limit) {
+    final String key = '$uid:$limit';
+    if (_remainingKey == key && _remainingFuture != null) return;
+    _remainingKey = key;
+    _remainingFuture =
+        widget.storeService.getRemainingSpins(uid, limit);
+  }
+
+  void _invalidateRemaining() {
+    _remainingFuture = null;
+    _remainingKey = '';
   }
 
   void _maybeRefreshStocks(RouletteConfig config) {
@@ -117,6 +133,9 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _maybeRefreshStocks(config);
         });
+        if (user != null) {
+          _ensureRemaining(user.uid, config.dailySpinLimit);
+        }
         return SingleChildScrollView(
           padding: const EdgeInsets.all(Sp.x4),
           child: Column(
@@ -124,8 +143,7 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
             children: <Widget>[
               if (user != null)
                 FutureBuilder<int>(
-                  future: widget.storeService
-                      .getRemainingSpins(user.uid, config.dailySpinLimit),
+                  future: _remainingFuture,
                   builder: (BuildContext context, AsyncSnapshot<int> spinSnap) {
                     final int remaining = spinSnap.data ?? config.dailySpinLimit;
                     return _RemainingBanner(
@@ -245,6 +263,7 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
         config.prizes.indexOf(wonPrize).clamp(0, config.prizes.length - 1);
     await _animateSlotTo(config, winnerIndex);
     if (!mounted) return;
+    _invalidateRemaining();
 
     if (wonPrize.gifticonStoreItemId != null) {
       final GifticonCode? gifticonCode = await widget.storeService.redeemGifticon(
@@ -313,6 +332,7 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
 
     await _animateSlotTo(config, prizeIndex);
     if (!mounted) return;
+    _invalidateRemaining();
     context.read<AuthProvider>().loadUser();
 
     if (gifticonRaw is Map) {
@@ -328,6 +348,7 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
   }
 
   Future<void> _animateSlotTo(RouletteConfig config, int winnerIndex) async {
+    if (config.prizes.isEmpty) return;
     final int currentIdx = _slotController.selectedItem;
     final int currentPrizeIdx = currentIdx % config.prizes.length;
     final int delta = (winnerIndex - currentPrizeIdx + config.prizes.length) %
@@ -335,24 +356,28 @@ class _StoreRouletteTabState extends State<StoreRouletteTab> {
     final int targetItem = currentIdx + 8 * config.prizes.length + delta;
 
     setState(() => _isSpinning = true);
-    await _slotController.animateToItem(
-      targetItem - 3,
-      duration: const Duration(milliseconds: 2800),
-      curve: Curves.easeIn,
-    );
-
-    if (!mounted) return;
-    for (int i = 2; i >= 0; i--) {
+    try {
       await _slotController.animateToItem(
-        targetItem - i,
-        duration: Duration(milliseconds: 300 + (2 - i) * 250),
-        curve: Curves.easeOut,
+        targetItem - 3,
+        duration: const Duration(milliseconds: 2800),
+        curve: Curves.easeIn,
       );
-      if (i > 0) HapticFeedback.mediumImpact();
-    }
-    HapticFeedback.heavyImpact();
 
-    if (mounted) setState(() => _isSpinning = false);
+      if (!mounted) return;
+      for (int i = 2; i >= 0; i--) {
+        await _slotController.animateToItem(
+          targetItem - i,
+          duration: Duration(milliseconds: 300 + (2 - i) * 250),
+          curve: Curves.easeOut,
+        );
+        if (i > 0) HapticFeedback.mediumImpact();
+      }
+      HapticFeedback.heavyImpact();
+    } on Object {
+      // 탭을 떠나면 컨트롤러가 dispose 된다. 결과는 이미 서버/클라에서 반영됨.
+    } finally {
+      if (mounted) setState(() => _isSpinning = false);
+    }
   }
 }
 

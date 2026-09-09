@@ -41,7 +41,10 @@ class StoreRaffleTab extends StatelessWidget {
           stream: storeService.watchRaffleRooms(),
           builder:
               (BuildContext context, AsyncSnapshot<List<RaffleRoom>> roomSnap) {
-            if (roomSnap.hasError || !roomSnap.hasData) {
+            if (roomSnap.hasError) {
+              return const StoreEmpty('응모방을 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+            }
+            if (!roomSnap.hasData) {
               return const StoreEmpty('응모방을 불러오는 중...');
             }
 

@@ -36,11 +36,13 @@ class _RankingScreenState extends State<RankingScreen>
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
 
   void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
     if (_tabController.index == 1) {
       _loadFriendRanking();
     }
@@ -222,35 +224,7 @@ class _FriendRankingList extends StatelessWidget {
     final DsColors c = context.ds;
     if (future == null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(Sp.x8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(Icons.people_outline, size: 40, color: c.textTertiary),
-              const SizedBox(height: Sp.x4),
-              Text(
-                '친구를 추가하면\n친구 랭킹을 볼 수 있어요',
-                textAlign: TextAlign.center,
-                style: DsType.body.on(c.textSecondary),
-              ),
-              const SizedBox(height: Sp.x4),
-              SizedBox(
-                width: 160,
-                child: DsButton(
-                  label: '친구 추가하기',
-                  icon: Icons.person_add,
-                  expand: true,
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                        builder: (_) => const FriendsScreen()),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: CircularProgressIndicator(color: c.flame, strokeWidth: 2),
       );
     }
     return _RankingList(future: future!, myUid: myUid, isFriend: true);
@@ -291,10 +265,43 @@ class _RankingList extends StatelessWidget {
         }
         final List<Map<String, dynamic>> rankings = snapshot.data ?? [];
         if (rankings.isEmpty) {
+          if (!isFriend) {
+            return Center(
+              child: Text(
+                '아직 집중 기록이 없습니다.',
+                style: DsType.body.on(c.textSecondary),
+              ),
+            );
+          }
           return Center(
-            child: Text(
-              isFriend ? '아직 친구가 없거나 집중 기록이 없어요.' : '아직 집중 기록이 없습니다.',
-              style: DsType.body.on(c.textSecondary),
+            child: Padding(
+              padding: const EdgeInsets.all(Sp.x8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.people_outline, size: 40, color: c.textTertiary),
+                  const SizedBox(height: Sp.x4),
+                  Text(
+                    '친구를 추가하면\n친구 랭킹을 볼 수 있어요',
+                    textAlign: TextAlign.center,
+                    style: DsType.body.on(c.textSecondary),
+                  ),
+                  const SizedBox(height: Sp.x4),
+                  SizedBox(
+                    width: 160,
+                    child: DsButton(
+                      label: '친구 추가하기',
+                      icon: Icons.person_add,
+                      expand: true,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                            builder: (_) => const FriendsScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
