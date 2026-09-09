@@ -1,0 +1,6 @@
+# android/key.properties 로 복사해서 실제 값 입력. key.properties 는 .gitignore 에 있다.
+# (이전에는 build.gradle.kts 에 비밀번호가 평문으로 커밋돼 있었다)
+storeFile=focus_cash.jks
+storePassword=CHANGE_ME
+keyAlias=mykey
+keyPassword=CHANGE_ME

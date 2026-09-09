@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
 import '../config/constants.dart';
 import '../domain/credit_rules.dart';
 import '../domain/session_recovery.dart';
@@ -10,17 +11,23 @@ import '../services/analytics_service.dart';
 import '../services/focus_service.dart';
 import '../services/credit_service.dart';
 import '../services/notification_service.dart';
+import '../services/server_api.dart';
 import '../services/xp_service.dart';
 
 enum FocusState { idle, focusing, completed, abandoned }
 
 class FocusProvider extends ChangeNotifier {
-  FocusProvider({FocusService? focusService, CreditService? creditService})
-      : _focusService = focusService ?? FocusService(),
-        _creditService = creditService ?? CreditService();
+  FocusProvider({
+    FocusService? focusService,
+    CreditService? creditService,
+    ServerApi? serverApi,
+  })  : _focusService = focusService ?? FocusService(),
+        _creditService = creditService ?? CreditService(),
+        _serverApi = serverApi ?? ServerApi();
 
   final FocusService _focusService;
   final CreditService _creditService;
+  final ServerApi _serverApi;
 
   /// 진행 중 세션의 로컬 저장 키. 프로세스가 죽어도 이것만 남는다.
   static const String kActiveSessionKey = 'active_focus_session';
@@ -230,6 +237,11 @@ class FocusProvider extends ChangeNotifier {
       watchedStartAd: session.watchedStartAd,
     );
 
+    if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+      await _completeViaServer(session, actualMinutes);
+      return;
+    }
+
     try {
       final (updated, outcome) = await _focusService
           .endSession(
@@ -269,6 +281,45 @@ class FocusProvider extends ChangeNotifier {
     // 백그라운드 작업 (UI 불필요) — reset() 후 null 참조 방지
     _maybeGiveReferralBonus(completedUserId);
     _updateNotifications(completedUserId, _earnedCredits, actualMinutes);
+    unawaited(AnalyticsService.instance.sessionComplete(
+      actualMinutes: actualMinutes,
+      credits: _earnedCredits,
+      mode: session.hardcoreMode,
+    ));
+  }
+
+  /// 서버 정산 경로 (AppConfig.useServerSettlement). 서버가 경과 시간을 검증하고
+  /// 크레딧·XP·스트릭·배지·첫 집중 보너스를 한 번에 반영한다. 클라이언트는 결과를 보여주기만 한다.
+  Future<void> _completeViaServer(FocusSession session, int actualMinutes) async {
+    try {
+      final r = await _serverApi.settleSession(session.id);
+      _earnedCredits = r.credits;
+      _firstFocusBonus = r.firstFocusBonus;
+      _outcome = SessionOutcome(
+        xpGained: r.xpGained,
+        badgeXpGained: r.badgeXpGained,
+        oldLevel: r.oldLevel,
+        newLevel: r.newLevel,
+        newBadges: r.newBadges,
+        currentStreak: r.currentStreak,
+        totalMinutesBefore: r.firstFocusBonus > 0 ? 0 : 1,
+      );
+      _currentSession = session.copyWith(
+        actualMinutes: actualMinutes,
+        creditsEarned: r.credits,
+        completed: true,
+        endedAt: DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('서버 정산 실패: $e');
+      _earnedCredits = 0;
+    }
+
+    _state = FocusState.completed;
+    notifyListeners();
+    await _clearPersistedSession();
+    _maybeGiveReferralBonus(session.userId);
+    _updateNotifications(session.userId, _earnedCredits, actualMinutes);
     unawaited(AnalyticsService.instance.sessionComplete(
       actualMinutes: actualMinutes,
       credits: _earnedCredits,
@@ -352,6 +403,12 @@ class FocusProvider extends ChangeNotifier {
 
     int granted = AppConstants.startAdBonus;
     try {
+      if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+        granted = await _serverApi.grantAdBonus(session.id, 'start');
+        _earnedCredits += granted;
+        notifyListeners();
+        return;
+      }
       granted = await _creditService.addCredits(
         userId: session.userId,
         amount: AppConstants.startAdBonus,
@@ -375,6 +432,12 @@ class FocusProvider extends ChangeNotifier {
 
     int granted = bonus;
     try {
+      if (AppConfig.useServerSettlement && !session.id.startsWith('local-')) {
+        granted = await _serverApi.grantAdBonus(session.id, 'end');
+        _earnedCredits += granted;
+        notifyListeners();
+        return;
+      }
       granted = await _creditService.addCredits(
         userId: session.userId,
         amount: bonus,

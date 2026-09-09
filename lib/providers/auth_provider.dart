@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
+import '../screens/profile/notification_settings_screen.dart';
 import '../services/auth_service.dart';
 import '../services/focus_service.dart';
 import '../services/notification_service.dart';
@@ -41,11 +43,9 @@ class AuthProvider extends ChangeNotifier {
         }
       }
 
-      // 로그인 후 스트릭 리마인더 등록 + 미완료 세션 정리
+      // 로그인 후 스트릭 리마인더 등록(사용자가 끄지 않았다면) + 미완료 세션 정리
       if (_user != null) {
-        NotificationService.instance
-            .scheduleStreakReminder(currentStreak: _user!.currentStreak)
-            .ignore();
+        _scheduleReminderIfEnabled(_user!.currentStreak);
         _focusService.cleanupOrphanedSessions(_user!.uid).ignore();
       }
     } catch (e) {
@@ -54,6 +54,19 @@ class AuthProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _scheduleReminderIfEnabled(int streak) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final enabled =
+          prefs.getBool(NotificationSettingsScreen.kStreakReminderKey) ?? true;
+      if (!enabled) return;
+      await NotificationService.instance
+          .scheduleStreakReminder(currentStreak: streak);
+    } catch (e) {
+      debugPrint('스트릭 리마인더 등록 실패: $e');
+    }
   }
 
   Future<bool> signInWithGoogle() async {

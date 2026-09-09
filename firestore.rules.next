@@ -1,0 +1,149 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Focus Cash Firestore 규칙 v2 — Cloud Functions 배포 후 적용한다.
+//
+// 원칙
+//  1. 크레딧·XP·스트릭 등 "돈이 되는" 필드는 클라이언트가 쓸 수 없다. 서버(Admin SDK)만 쓴다.
+//  2. 기프티콘 코드는 발급받은 사람만 읽는다. (v1 은 모든 인증 유저가 미사용 코드를 읽을 수 있었다)
+//  3. 관리자는 custom claim `admin == true` 다. (v1 은 "익명 로그인 = 관리자" 였다)
+//  4. 사용자가 직접 쓸 수 있는 문서는 프로필 필드·세션 시작·친구 요청·메모·룰렛/응모 상태 조회뿐이다.
+//
+// 배포: firebase deploy --only firestore:rules  (이 파일을 firestore.rules 로 교체한 뒤)
+// ─────────────────────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function incoming() { return request.resource.data; }
+    function changed() { return incoming().diff(resource.data).affectedKeys(); }
+
+    // ── users ───────────────────────────────────────────────
+    // 읽기: 인증 유저 (랭킹·친구 검색). 단, 전화번호 같은 민감 필드는 앱이 쓰지 않으므로 삭제 예정.
+    // 생성: 본인, 크레딧/XP 는 0 으로만.
+    // 수정: 본인은 프로필 필드만. 경제 필드는 서버 전용.
+    match /users/{userId} {
+      allow read: if signedIn();
+
+      allow create: if isOwner(userId)
+        && incoming().uid == userId
+        && incoming().totalCredits == 0
+        && incoming().todayCredits == 0
+        && incoming().xp == 0
+        && incoming().level == 1
+        && incoming().totalFocusMinutes == 0
+        && incoming().currentStreak == 0
+        && incoming().badges.size() == 0
+        && incoming().firstFocusBonusGiven == false
+        && incoming().inviteBonusGiven == false;
+
+      allow update: if isOwner(userId)
+        && changed().hasOnly([
+          'displayName', 'avatarIndex', 'marketingAgreed',
+          'lastActiveAt', 'lastCheckInDate', 'inviteCode'
+        ])
+        && incoming().displayName is string
+        && incoming().displayName.size() <= 10;
+
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ── focus_sessions ──────────────────────────────────────
+    // 생성: 본인, 미완료 상태로만, startedAt 은 서버 시각.
+    // 수정: 클라이언트는 "포기"만 표시할 수 있다. 완료·크레딧은 settleSession 이 쓴다.
+    match /focus_sessions/{sessionId} {
+      allow read: if signedIn();
+
+      allow create: if isOwner(incoming().userId)
+        && incoming().completed == false
+        && incoming().creditsEarned == 0
+        && incoming().actualMinutes == 0
+        && incoming().targetMinutes is int
+        && incoming().targetMinutes >= 10
+        && incoming().targetMinutes <= 120
+        && incoming().startedAt == request.time
+        && !('settledAt' in incoming());
+
+      allow update: if isOwner(resource.data.userId)
+        && !('settledAt' in resource.data)
+        && changed().hasOnly(['completed', 'endedAt', 'actualMinutes', 'creditsEarned'])
+        && incoming().completed == false
+        && incoming().creditsEarned == 0;
+
+      allow delete: if false;
+    }
+
+    // ── credit_transactions ─────────────────────────────────
+    // 원장은 읽기 전용. 쓰기는 서버만.
+    match /credit_transactions/{txId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // ── friend_requests ─────────────────────────────────────
+    match /friend_requests/{requestId} {
+      allow read: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if isOwner(incoming().from)
+        && incoming().from != incoming().to
+        && incoming().status == 'pending';
+      // 받은 사람만 수락/거절, 보낸 사람은 취소(삭제)만
+      allow update: if isOwner(resource.data.to)
+        && changed().hasOnly(['status'])
+        && incoming().status in ['accepted', 'rejected'];
+      allow delete: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+    }
+
+    // ── gifticon_codes ──────────────────────────────────────
+    // 읽기: 내가 발급받은 것만. 미사용 코드는 아무도 못 읽는다 (재고 수는 서버 count 로).
+    // 수정: 직접배송 당첨자가 배송지만 입력할 수 있다.
+    // 생성·삭제: 관리자 또는 서버.
+    match /gifticon_codes/{codeId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.isUsed == true && resource.data.usedBy == request.auth.uid);
+
+      allow update: if isAdmin()
+        || (isOwner(resource.data.usedBy)
+            && resource.data.prizeType == 'direct'
+            && changed().hasOnly(['deliveryName', 'deliveryPhone', 'deliveryAddress', 'deliveryStatus', 'hiddenAt'])
+            && incoming().deliveryName.size() <= 50
+            && incoming().deliveryPhone.size() <= 20
+            && incoming().deliveryAddress.size() <= 200)
+        || (isOwner(resource.data.usedBy)
+            && changed().hasOnly(['hiddenAt']));
+
+      allow create, delete: if isAdmin();
+    }
+
+    // ── 운영 설정 (읽기 모두 / 쓰기 관리자) ──────────────────
+    match /store_items/{itemId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /raffle_rooms/{roomId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /roulette_config/{configId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── raffle_entries ──────────────────────────────────────
+    // 티켓은 enterRaffle 만 쓴다. 클라이언트는 자기 것과 방별 합계 표시를 위해 읽기만.
+    match /raffle_entries/{entryId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── user_notes ──────────────────────────────────────────
+    match /user_notes/{noteId} {
+      allow read, write: if signedIn()
+        && noteId.matches(request.auth.uid + '_.*')
+        && (request.method == 'delete' || incoming().userId == request.auth.uid);
+    }
+  }
+}

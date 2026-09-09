@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -23,12 +26,22 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    // 서명 정보는 android/key.properties (gitignore) 에서 읽는다.
+    // 파일이 없으면 릴리즈도 디버그 키로 서명돼 빌드는 되지만 스토어 업로드는 안 된다.
+    val keystoreProperties = Properties().apply {
+        val f = rootProject.file("key.properties")
+        if (f.exists()) load(FileInputStream(f))
+    }
+    val hasReleaseKey = keystoreProperties.containsKey("storeFile")
+
     signingConfigs {
-        create("release") {
-            keyAlias = "mykey"
-            keyPassword = "046170"
-            storeFile = file("focus_cash.jks")
-            storePassword = "046170"
+        if (hasReleaseKey) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
@@ -42,7 +55,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release")
+                            else signingConfigs.getByName("debug")
         }
     }
 }

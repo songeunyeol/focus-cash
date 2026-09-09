@@ -14,6 +14,7 @@ import 'credit_history_screen.dart';
 import 'my_gifticons_screen.dart';
 import 'achievements_screen.dart';
 import 'focus_calendar_screen.dart';
+import 'notification_settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -484,6 +485,15 @@ class ProfileScreen extends StatelessWidget {
         'onTap': () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FocusStatsScreen()),
+            ),
+      },
+      {
+        'icon': Icons.notifications_outlined,
+        'title': '알림 설정',
+        'onTap': () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const NotificationSettingsScreen()),
             ),
       },
       {

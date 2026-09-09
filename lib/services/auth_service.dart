@@ -147,6 +147,16 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update(updates);
   }
 
+  /// 마케팅 수신 동의 변경 (알림 설정 화면). 철회 경로는 법적으로 필수다.
+  Future<void> updateMarketingAgreed({
+    required String uid,
+    required bool agreed,
+  }) async {
+    await _firestore.collection('users').doc(uid).update({
+      'marketingAgreed': agreed,
+    });
+  }
+
   Future<UserModel?> getUserModel() async {
     final user = currentUser;
     if (user == null) return null;

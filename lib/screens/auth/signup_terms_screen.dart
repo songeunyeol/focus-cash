@@ -11,6 +11,7 @@ class SignupTermsScreen extends StatefulWidget {
 
 class _SignupTermsScreenState extends State<SignupTermsScreen> {
   bool _allAgreed = false;
+  bool _ageAgreed = false;
   bool _termsAgreed = false;
   bool _privacyAgreed = false;
   bool _marketingAgreed = false;
@@ -19,6 +20,7 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
     final v = value ?? false;
     setState(() {
       _allAgreed = v;
+      _ageAgreed = v;
       _termsAgreed = v;
       _privacyAgreed = v;
       _marketingAgreed = v;
@@ -27,11 +29,14 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
 
   void _updateAll() {
     setState(() {
-      _allAgreed = _termsAgreed && _privacyAgreed && _marketingAgreed;
+      _allAgreed =
+          _ageAgreed && _termsAgreed && _privacyAgreed && _marketingAgreed;
     });
   }
 
-  bool get _canProceed => _termsAgreed && _privacyAgreed;
+  // 약관 제2조·개인정보 처리방침 4항: 만 14세 미만은 법정대리인 동의 없이 가입 불가.
+  // 이전에는 확인 절차 없이 가입됐다.
+  bool get _canProceed => _ageAgreed && _termsAgreed && _privacyAgreed;
 
   void _proceed() {
     Navigator.of(context).pushReplacementNamed(
@@ -145,6 +150,23 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
               Divider(
                 color: AppTheme.of(context).borderSubtle,
                 height: 16,
+              ),
+
+              // 만 14세 이상 (필수)
+              _TermsItem(
+                title: '[필수] 만 14세 이상입니다',
+                value: _ageAgreed,
+                onChanged: (v) {
+                  setState(() => _ageAgreed = v ?? false);
+                  _updateAll();
+                },
+                onTap: () => _showTermsDialog(
+                  context,
+                  '만 14세 이상 확인',
+                  '만 14세 미만은 법정대리인(부모 등)의 동의가 있어야 가입할 수 있습니다.\n'
+                      '만 14세 미만임이 확인되면 계정과 개인정보는 즉시 삭제됩니다.\n\n'
+                      '자세한 내용은 개인정보 처리방침 4항을 참고해주세요.',
+                ),
               ),
 
               // 이용약관 (필수)
