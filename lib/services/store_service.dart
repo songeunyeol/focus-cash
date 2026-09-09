@@ -75,6 +75,8 @@ class StoreService {
     return _db
         .collection('gifticon_codes')
         .where('usedBy', isEqualTo: userId)
+        // 규칙 v2 는 "isUsed == true && usedBy == 나" 만 읽게 한다. 쿼리 조건이 규칙을 증명해야 하므로 isUsed 를 함께 건다.
+        .where('isUsed', isEqualTo: true)
         .orderBy('usedAt', descending: true)
         .snapshots()
         .map((snap) {

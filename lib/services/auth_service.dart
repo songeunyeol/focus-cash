@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
+import '../config/app_config.dart';
 import '../models/user_model.dart';
+import 'server_api.dart';
 
 class AuthService {
   AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
@@ -40,10 +42,15 @@ class AuthService {
   // ───────────────────────────────────────────
   Future<UserCredential?> signInWithKakao() async {
     // 카카오톡 설치 여부에 따라 분기
-    if (await isKakaoTalkInstalled()) {
-      await UserApi.instance.loginWithKakaoTalk();
-    } else {
-      await UserApi.instance.loginWithKakaoAccount();
+    final OAuthToken kakaoToken = await isKakaoTalkInstalled()
+        ? await UserApi.instance.loginWithKakaoTalk()
+        : await UserApi.instance.loginWithKakaoAccount();
+
+    if (AppConfig.useServerKakaoAuth) {
+      // 서버가 카카오 토큰을 검증하고 custom token 을 만든다.
+      // 아래 이메일/비밀번호 방식은 카카오 ID 만 알면 타인 계정에 들어갈 수 있는 구조였다.
+      final r = await ServerApi().kakaoSignIn(kakaoToken.accessToken);
+      return _auth.signInWithCustomToken(r.token);
     }
 
     // 카카오 사용자 정보 조회

@@ -6,8 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import '../../config/app_config.dart';
 import '../../domain/weighted_pick.dart';
 import '../../services/analytics_service.dart';
+import '../../services/server_api.dart';
 import '../../models/store_item.dart';
 import '../../models/roulette_config.dart';
 import '../../models/raffle_room.dart';
@@ -32,6 +35,7 @@ class _StoreScreenState extends State<StoreScreen>
   int _lastHapticItem = -1;
   final CreditService _creditService = CreditService();
   final StoreService _storeService = StoreService();
+  final ServerApi _serverApi = ServerApi();
 
   // 기프티콘 재고 캐시 (storeItemId → 남은 수량)
   Map<String, int> _gifticonStocks = {};
@@ -244,6 +248,28 @@ class _StoreScreenState extends State<StoreScreen>
     );
 
     if (confirmed != true || !mounted) return;
+
+    if (AppConfig.useServerStore) {
+      // 잔액 확인 + 차감 + 발급이 서버 한 트랜잭션. 두 단계 사이에 앱이 죽어도 크레딧만 사라지지 않는다.
+      try {
+        final r = await _serverApi.redeemGifticon(storeItemId);
+        if (!mounted) return;
+        context.read<AuthProvider>().loadUser();
+        unawaited(AnalyticsService.instance
+            .exchange(itemId: storeItemId, cost: cost));
+        _showGifticonResultDialog(GifticonCode.fromMap({
+          ...r,
+          'storeItemId': storeItemId,
+          'isUsed': true,
+          'usedBy': user.uid,
+        }));
+      } on FirebaseFunctionsException catch (e) {
+        _snack(e.message ?? '교환에 실패했습니다');
+      } catch (_) {
+        _snack('네트워크 오류로 교환하지 못했습니다');
+      }
+      return;
+    }
 
     final success = await _creditService.spendCredits(
       userId: user.uid,
@@ -779,6 +805,11 @@ class _StoreScreenState extends State<StoreScreen>
     final user = context.read<AuthProvider>().user;
     if (user == null) return;
 
+    if (AppConfig.useServerStore) {
+      await _spinRouletteViaServer(config);
+      return;
+    }
+
     // 기프티콘 재고 최신 조회 → 품절 상품 제외
     final gifticonIds = config.prizes
         .where((p) => p.gifticonStoreItemId != null)
@@ -795,11 +826,7 @@ class _StoreScreenState extends State<StoreScreen>
     }).toList();
 
     if (eligiblePrizes.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('현재 교환 가능한 상품이 없습니다')),
-        );
-      }
+      _snack('현재 교환 가능한 상품이 없습니다');
       return;
     }
 
@@ -810,11 +837,7 @@ class _StoreScreenState extends State<StoreScreen>
       description: '룰렛 사용',
     );
     if (!success) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('크레딧이 부족합니다')),
-        );
-      }
+      _snack('크레딧이 부족합니다');
       return;
     }
 
@@ -827,12 +850,8 @@ class _StoreScreenState extends State<StoreScreen>
         amount: config.cost,
         description: '룰렛 일일 한도 초과 환불',
       );
-      if (mounted) {
-        context.read<AuthProvider>().loadUser();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('오늘 횟수를 모두 사용했습니다')),
-        );
-      }
+      if (mounted) context.read<AuthProvider>().loadUser();
+      _snack('오늘 횟수를 모두 사용했습니다');
       return;
     }
 
@@ -846,11 +865,7 @@ class _StoreScreenState extends State<StoreScreen>
         amount: config.cost,
         description: '룰렛 오류 환불',
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('현재 룰렛 상품이 준비 중입니다. 크레딧이 환불되었습니다.')),
-        );
-      }
+      _snack('현재 룰렛 상품이 준비 중입니다. 크레딧이 환불되었습니다.');
       return;
     }
 
@@ -867,33 +882,8 @@ class _StoreScreenState extends State<StoreScreen>
     // 애니메이션용 인덱스는 전체 상품 목록에서 찾음
     final winnerIndex =
         config.prizes.indexOf(wonPrize).clamp(0, config.prizes.length - 1);
-
-    final currentIdx = _slotController.selectedItem;
-    final currentPrizeIdx = currentIdx % config.prizes.length;
-    final delta = (winnerIndex - currentPrizeIdx + config.prizes.length) %
-        config.prizes.length;
-    final targetItem = currentIdx + 8 * config.prizes.length + delta;
-
-    setState(() => _isSpinning = true);
-    await _slotController.animateToItem(
-      targetItem - 3,
-      duration: const Duration(milliseconds: 2800),
-      curve: Curves.easeIn,
-    );
-
+    await _animateSlotTo(config, winnerIndex);
     if (!mounted) return;
-    for (int i = 2; i >= 0; i--) {
-      await _slotController.animateToItem(
-        targetItem - i,
-        duration: Duration(milliseconds: 300 + (2 - i) * 250),
-        curve: Curves.easeOut,
-      );
-      if (i > 0) HapticFeedback.mediumImpact();
-    }
-    HapticFeedback.heavyImpact();
-
-    if (!mounted) return;
-    setState(() => _isSpinning = false);
 
     final prize = wonPrize;
 
@@ -918,41 +908,7 @@ class _StoreScreenState extends State<StoreScreen>
         );
         if (mounted) {
           context.read<AuthProvider>().loadUser();
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: AppTheme.of(context).card,
-              title: const Text('🎉 기프티콘 당첨!',
-                  style: TextStyle(color: AppTheme.creditGold)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.card_giftcard,
-                      size: 48, color: AppTheme.primaryColor),
-                  SizedBox(height: 12),
-                  Text(prize.name,
-                      style: TextStyle(
-                          color: AppTheme.of(context).textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  Text('현재 재고가 소진되어\n100 크레딧으로 대체되었습니다.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: AppTheme.of(context).textSecondary, fontSize: 13)),
-                ],
-              ),
-              actions: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('확인'),
-                  ),
-                ),
-              ],
-            ),
-          );
+          _showStockFallbackDialog(prize.name);
         }
       }
     } else {
@@ -970,41 +926,153 @@ class _StoreScreenState extends State<StoreScreen>
 
       if (mounted) {
         context.read<AuthProvider>().loadUser();
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppTheme.of(context).card,
-            title: const Text('🎉 축하합니다!',
-                style: TextStyle(color: AppTheme.creditGold)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.casino, size: 48, color: AppTheme.creditGold),
-                SizedBox(height: 12),
-                Text(prize.name,
-                    style: TextStyle(
-                        color: AppTheme.of(context).textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text('+${prize.credits} 크레딧 획득!',
-                    style: const TextStyle(
-                        color: AppTheme.creditGold, fontSize: 16)),
-              ],
-            ),
-            actions: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('확인'),
-                ),
-              ),
-            ],
-          ),
-        );
+        _showCreditWinDialog(prize.name, prize.credits);
       }
     }
+  }
+
+  /// 서버 경로 (AppConfig.useServerStore): 차감·난수·지급을 spinRoulette 함수가 한 트랜잭션으로 처리한다.
+  /// 클라이언트는 결과 인덱스로 애니메이션만 돌리고 결과를 보여준다.
+  Future<void> _spinRouletteViaServer(RouletteConfig config) async {
+    Map<String, dynamic> r;
+    try {
+      r = await _serverApi.spinRoulette();
+    } on FirebaseFunctionsException catch (e) {
+      _snack(e.message ?? '룰렛을 돌릴 수 없습니다');
+      return;
+    } catch (_) {
+      _snack('네트워크 오류로 룰렛을 돌리지 못했습니다');
+      return;
+    }
+    if (!mounted) return;
+
+    final prizeIndex =
+        (r['prizeIndex'] as int? ?? 0).clamp(0, config.prizes.length - 1);
+    final prizeName = r['prizeName'] as String? ?? config.prizes[prizeIndex].name;
+    final credits = r['credits'] as int? ?? 0;
+    final gifticonRaw = r['gifticon'];
+    unawaited(AnalyticsService.instance
+        .rouletteSpin(cost: config.cost, prize: prizeName));
+
+    await _animateSlotTo(config, prizeIndex);
+    if (!mounted) return;
+    context.read<AuthProvider>().loadUser();
+
+    if (gifticonRaw is Map) {
+      _showGifticonResultDialog(
+          GifticonCode.fromMap(Map<String, dynamic>.from(gifticonRaw)));
+    } else if (credits > 0) {
+      _showCreditWinDialog(prizeName, credits);
+    } else {
+      _showStockFallbackDialog(prizeName);
+    }
+  }
+
+  Future<void> _animateSlotTo(RouletteConfig config, int winnerIndex) async {
+    final currentIdx = _slotController.selectedItem;
+    final currentPrizeIdx = currentIdx % config.prizes.length;
+    final delta = (winnerIndex - currentPrizeIdx + config.prizes.length) %
+        config.prizes.length;
+    final targetItem = currentIdx + 8 * config.prizes.length + delta;
+
+    setState(() => _isSpinning = true);
+    await _slotController.animateToItem(
+      targetItem - 3,
+      duration: const Duration(milliseconds: 2800),
+      curve: Curves.easeIn,
+    );
+
+    if (!mounted) return;
+    for (int i = 2; i >= 0; i--) {
+      await _slotController.animateToItem(
+        targetItem - i,
+        duration: Duration(milliseconds: 300 + (2 - i) * 250),
+        curve: Curves.easeOut,
+      );
+      if (i > 0) HapticFeedback.mediumImpact();
+    }
+    HapticFeedback.heavyImpact();
+
+    if (mounted) setState(() => _isSpinning = false);
+  }
+
+  void _snack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showCreditWinDialog(String prizeName, int credits) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.of(context).card,
+        title: const Text('🎉 축하합니다!',
+            style: TextStyle(color: AppTheme.creditGold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.casino, size: 48, color: AppTheme.creditGold),
+            SizedBox(height: 12),
+            Text(prizeName,
+                style: TextStyle(
+                    color: AppTheme.of(context).textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('+$credits 크레딧 획득!',
+                style: const TextStyle(
+                    color: AppTheme.creditGold, fontSize: 16)),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showStockFallbackDialog(String prizeName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.of(context).card,
+        title: const Text('🎉 기프티콘 당첨!',
+            style: TextStyle(color: AppTheme.creditGold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.card_giftcard,
+                size: 48, color: AppTheme.primaryColor),
+            SizedBox(height: 12),
+            Text(prizeName,
+                style: TextStyle(
+                    color: AppTheme.of(context).textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('현재 재고가 소진되어\n100 크레딧으로 대체되었습니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: AppTheme.of(context).textSecondary, fontSize: 13)),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('확인'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ───────────────────────────────────────────
@@ -1367,6 +1435,35 @@ class _RaffleEntrySheetState extends State<_RaffleEntrySheet> {
     }
 
     setState(() => _isLoading = true);
+
+    if (AppConfig.useServerStore) {
+      try {
+        final r = await ServerApi().enterRaffle(widget.room.id, tickets);
+        final actualTickets = r['actualTickets'] as int? ?? tickets;
+        final winnerId = r['winnerId'] as String?;
+        unawaited(AnalyticsService.instance
+            .raffleEnter(roomId: widget.room.id, tickets: actualTickets));
+        if (mounted) {
+          Navigator.of(context).pop();
+          widget.onSuccess(winnerId);
+        }
+      } on FirebaseFunctionsException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? '응모에 실패했습니다')),
+          );
+        }
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('네트워크 오류로 응모하지 못했습니다')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+      return;
+    }
 
     try {
       final success = await widget.creditService.spendCredits(
