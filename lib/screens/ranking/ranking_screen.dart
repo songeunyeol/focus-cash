@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../config/constants.dart';
-import '../../config/theme.dart';
+import '../../design/ds.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/focus_service.dart';
 import '../../services/friend_service.dart';
+import '../../widgets/common/ds_button.dart';
 import '../social/friends_screen.dart';
 
 class RankingScreen extends StatefulWidget {
@@ -45,11 +47,12 @@ class _RankingScreenState extends State<RankingScreen>
   }
 
   void _loadFriendRanking() {
-    final myUid = context.read<AuthProvider>().user?.uid ?? '';
+    final String myUid = context.read<AuthProvider>().user?.uid ?? '';
     setState(() {
       _friendFuture = _friendService
           .getFriendUids(myUid)
-          .then((uids) => _focusService.getFriendRanking(_period, uids, myUid));
+          .then((List<String> uids) =>
+              _focusService.getFriendRanking(_period, uids, myUid));
     });
   }
 
@@ -76,73 +79,93 @@ class _RankingScreenState extends State<RankingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final myUid = context.watch<AuthProvider>().user?.uid ?? '';
+    final DsColors c = context.ds;
+    final String myUid = context.watch<AuthProvider>().user?.uid ?? '';
 
     return Scaffold(
+      backgroundColor: c.bg,
       appBar: AppBar(
-        title: ShaderMask(
-          shaderCallback: (bounds) =>
-              AppTheme.primaryGradient.createShader(bounds),
-          child: const Text(
-            '랭킹',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ),
-        actions: [
+        title: const Text('랭킹'),
+        actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.people_outline, color: AppTheme.of(context).textSecondary),
+            icon: const Icon(Icons.people_outline),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const FriendsScreen()),
+              MaterialPageRoute<void>(
+                  builder: (_) => const FriendsScreen()),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: AppTheme.of(context).textSecondary),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: _refresh,
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: TabBar(
-            controller: _tabController,
-            indicatorColor: AppTheme.primaryColor,
-            indicatorSize: TabBarIndicatorSize.label,
-            labelColor: AppTheme.primaryColor,
-            unselectedLabelColor: AppTheme.of(context).textSecondary,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            tabs: const [
-              Tab(icon: Icon(Icons.public_outlined, size: 18), text: '전체 랭킹'),
-              Tab(icon: Icon(Icons.group_outlined, size: 18), text: '친구 랭킹'),
-            ],
+          preferredSize: const Size.fromHeight(44),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom:
+                    BorderSide(color: c.borderSubtle, width: Stroke.hairline),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelStyle: DsType.label,
+              unselectedLabelStyle: DsType.label,
+              labelColor: c.textPrimary,
+              unselectedLabelColor: c.textTertiary,
+              indicatorColor: c.flame,
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorWeight: Stroke.thick,
+              dividerColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor:
+                  const WidgetStatePropertyAll<Color>(Colors.transparent),
+              tabs: const <Widget>[
+                Tab(text: '전체'),
+                Tab(text: '친구'),
+              ],
+            ),
           ),
         ),
       ),
       body: Column(
-        children: [
-          // 기간 선택
+        children: <Widget>[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(Sp.x4, Sp.x3, Sp.x4, 0),
             child: Row(
-              children: [
-                _buildPeriodChip('daily', '일간'),
-                const SizedBox(width: 8),
-                _buildPeriodChip('weekly', '주간'),
-                const SizedBox(width: 8),
-                _buildPeriodChip('monthly', '월간'),
+              children: <Widget>[
+                _PeriodChip(
+                  selected: _period == 'daily',
+                  label: '일간',
+                  onTap: () => _changePeriod('daily'),
+                ),
+                const SizedBox(width: Sp.x2),
+                _PeriodChip(
+                  selected: _period == 'weekly',
+                  label: '주간',
+                  onTap: () => _changePeriod('weekly'),
+                ),
+                const SizedBox(width: Sp.x2),
+                _PeriodChip(
+                  selected: _period == 'monthly',
+                  label: '월간',
+                  onTap: () => _changePeriod('monthly'),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: Sp.x2),
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildRankingList(_globalFuture, myUid),
-                _buildFriendRankingList(myUid),
+              children: <Widget>[
+                _RankingList(future: _globalFuture, myUid: myUid),
+                _FriendRankingList(
+                  future: _friendFuture,
+                  myUid: myUid,
+                ),
               ],
             ),
           ),
@@ -150,262 +173,264 @@ class _RankingScreenState extends State<RankingScreen>
       ),
     );
   }
+}
 
-  Widget _buildFriendRankingList(String myUid) {
-    if (_friendFuture == null) {
+class _PeriodChip extends StatelessWidget {
+  const _PeriodChip({
+    required this.selected,
+    required this.label,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Motion.standard,
+        padding: const EdgeInsets.symmetric(horizontal: Sp.x4, vertical: Sp.x2),
+        decoration: BoxDecoration(
+          color: selected ? c.flame : c.surface,
+          borderRadius: R.rSm,
+          border: Border.all(
+            color: selected ? c.flame : c.borderDefault,
+            width: Stroke.hairline,
+          ),
+        ),
+        child: Text(
+          label,
+          style: DsType.label.on(selected ? c.onAccent : c.textSecondary),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendRankingList extends StatelessWidget {
+  const _FriendRankingList({required this.future, required this.myUid});
+
+  final Future<List<Map<String, dynamic>>>? future;
+  final String myUid;
+
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
+    if (future == null) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppTheme.of(context).surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.of(context).borderSubtle),
+        child: Padding(
+          padding: const EdgeInsets.all(Sp.x8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(Icons.people_outline, size: 40, color: c.textTertiary),
+              const SizedBox(height: Sp.x4),
+              Text(
+                '친구를 추가하면\n친구 랭킹을 볼 수 있어요',
+                textAlign: TextAlign.center,
+                style: DsType.body.on(c.textSecondary),
               ),
-              child: Icon(Icons.people_outline,
-                  size: 40, color: AppTheme.of(context).textMuted),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              '친구를 추가하면\n친구 랭킹을 볼 수 있어요!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppTheme.of(context).textSecondary,
-                fontSize: 15,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              decoration: AppTheme.glowButton,
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const FriendsScreen()),
+              const SizedBox(height: Sp.x4),
+              SizedBox(
+                width: 160,
+                child: DsButton(
+                  label: '친구 추가하기',
+                  icon: Icons.person_add,
+                  expand: true,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                        builder: (_) => const FriendsScreen()),
+                  ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                ),
-                icon: const Icon(Icons.person_add, size: 18),
-                label: const Text('친구 추가하기'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
-    return _buildRankingList(_friendFuture!, myUid, isFriend: true);
+    return _RankingList(future: future!, myUid: myUid, isFriend: true);
   }
+}
 
-  Widget _buildRankingList(
-    Future<List<Map<String, dynamic>>> future,
-    String myUid, {
-    bool isFriend = false,
-  }) {
+class _RankingList extends StatelessWidget {
+  const _RankingList({
+    required this.future,
+    required this.myUid,
+    this.isFriend = false,
+  });
+
+  final Future<List<Map<String, dynamic>>> future;
+  final String myUid;
+  final bool isFriend;
+
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: future,
-      builder: (context, snapshot) {
+      builder: (BuildContext context,
+          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          return Center(
+            child: CircularProgressIndicator(color: c.flame, strokeWidth: 2),
           );
         }
         if (snapshot.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.wifi_off_rounded, color: AppTheme.of(context).textMuted, size: 40),
-                const SizedBox(height: 12),
-                Text(
-                  '랭킹을 불러오지 못했어요\n잠시 후 다시 시도해주세요',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppTheme.of(context).textSecondary, height: 1.6),
-                ),
-              ],
+            child: Text(
+              '랭킹을 불러오지 못했어요\n잠시 후 다시 시도해주세요',
+              textAlign: TextAlign.center,
+              style: DsType.body.on(c.textSecondary),
             ),
           );
         }
-        final rankings = snapshot.data ?? [];
+        final List<Map<String, dynamic>> rankings = snapshot.data ?? [];
         if (rankings.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_outlined,
-                    size: 48, color: AppTheme.of(context).textMuted),
-                const SizedBox(height: 12),
-                Text(
-                  isFriend
-                      ? '아직 친구가 없거나 집중 기록이 없어요.'
-                      : '아직 집중 기록이 없습니다.',
-                  style: TextStyle(color: AppTheme.of(context).textSecondary),
-                ),
-              ],
+            child: Text(
+              isFriend ? '아직 친구가 없거나 집중 기록이 없어요.' : '아직 집중 기록이 없습니다.',
+              style: DsType.body.on(c.textSecondary),
             ),
           );
         }
 
-        // 상위 3명 포디움 + 나머지 리스트
-        final top3 = rankings.take(3).toList();
-        final rest = rankings.skip(3).toList();
+        final List<Map<String, dynamic>> top3 = rankings.take(3).toList();
+        final List<Map<String, dynamic>> rest = rankings.skip(3).toList();
 
         return ListView(
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-          children: [
-            if (top3.isNotEmpty) _buildPodium(top3, myUid),
-            const SizedBox(height: 16),
-            ...rest.map((item) => _buildRankItem(item, myUid)),
+          padding: const EdgeInsets.fromLTRB(Sp.x4, Sp.x2, Sp.x4, Sp.x6),
+          children: <Widget>[
+            if (top3.isNotEmpty) _Podium(top3: top3, myUid: myUid),
+            const SizedBox(height: Sp.x4),
+            ...rest.map((Map<String, dynamic> item) =>
+                _RankItem(item: item, myUid: myUid)),
           ],
         );
       },
     );
   }
+}
 
-  Widget _buildPodium(List<Map<String, dynamic>> top3, String myUid) {
-    // 포디움 순서: 2위 - 1위 - 3위
-    final items = <Map<String, dynamic>?>[];
-    items.add(top3.length > 1 ? top3[1] : null); // 2위
-    items.add(top3.isNotEmpty ? top3[0] : null);  // 1위
-    items.add(top3.length > 2 ? top3[2] : null);  // 3위
+String _timeStr(int minutes) {
+  final int h = minutes ~/ 60;
+  final int m = minutes % 60;
+  return h > 0 ? '$h시간${m > 0 ? ' $m분' : ''}' : '$m분';
+}
 
-    final heights = [90.0, 120.0, 70.0]; // 포디움 높이
-    final colors = [AppTheme.rankSilver, AppTheme.rankGold, AppTheme.rankBronze];
-    final labels = ['2위', '1위', '3위'];
-    final medals = ['🥈', '🥇', '🥉'];
+class _Podium extends StatelessWidget {
+  const _Podium({required this.top3, required this.myUid});
+
+  final List<Map<String, dynamic>> top3;
+  final String myUid;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Map<String, dynamic>?> items = <Map<String, dynamic>?>[
+      top3.length > 1 ? top3[1] : null,
+      top3.isNotEmpty ? top3[0] : null,
+      top3.length > 2 ? top3[2] : null,
+    ];
+    const List<double> heights = <double>[72, 104, 56];
+    const List<String> labels = <String>['2', '1', '3'];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(3, (i) {
-        final item = items[i];
+      children: List<Widget>.generate(3, (int i) {
+        final Map<String, dynamic>? item = items[i];
         if (item == null) return const Expanded(child: SizedBox());
-        return _buildPodiumItem(
+        return _PodiumItem(
           item: item,
           myUid: myUid,
           podiumHeight: heights[i],
-          rankColor: colors[i],
           label: labels[i],
-          medal: medals[i],
+          first: i == 1,
         );
       }),
     );
   }
+}
 
-  Widget _buildPodiumItem({
-    required Map<String, dynamic> item,
-    required String myUid,
-    required double podiumHeight,
-    required Color rankColor,
-    required String label,
-    required String medal,
-  }) {
-    final name = item['name'] as String? ?? '집중러';
-    final minutes = item['minutes'] as int? ?? 0;
-    final avatarIndex =
-        ((item['avatarIndex'] as int?) ?? 0).clamp(0, AppConstants.avatarEmojis.length - 1);
-    final isMe = item['uid'] == myUid;
+class _PodiumItem extends StatelessWidget {
+  const _PodiumItem({
+    required this.item,
+    required this.myUid,
+    required this.podiumHeight,
+    required this.label,
+    required this.first,
+  });
 
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    final timeStr = h > 0 ? '$h시간${m > 0 ? ' $m분' : ''}' : '$m분';
+  final Map<String, dynamic> item;
+  final String myUid;
+  final double podiumHeight;
+  final String label;
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
+    final String name = item['name'] as String? ?? '집중러';
+    final int minutes = item['minutes'] as int? ?? 0;
+    final int avatarIndex =
+        ((item['avatarIndex'] as int?) ?? 0)
+            .clamp(0, AppConstants.avatarEmojis.length - 1);
+    final bool isMe = item['uid'] == myUid;
 
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          // 아바타
-          Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: rankColor.withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: rankColor.withValues(alpha: isMe ? 1.0 : 0.6),
-                    width: isMe ? 2.5 : 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: rankColor.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    AppConstants.avatarEmojis[avatarIndex],
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                ),
-              ),
-              // 메달 뱃지
-              Positioned(
-                top: -6,
-                child: Text(medal, style: const TextStyle(fontSize: 18)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: TextStyle(
-              color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            timeStr,
-            style: TextStyle(
-              color: rankColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          // 포디움 단
+        children: <Widget>[
           Container(
-            height: podiumHeight,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  rankColor.withValues(alpha: 0.3),
-                  rankColor.withValues(alpha: 0.1),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-              border: Border(
-                top: BorderSide(color: rankColor.withValues(alpha: 0.5), width: 1.5),
-                left: BorderSide(color: rankColor.withValues(alpha: 0.2), width: 1),
-                right: BorderSide(color: rankColor.withValues(alpha: 0.2), width: 1),
+              shape: BoxShape.circle,
+              color: first ? c.flameTint : c.surface,
+              border: Border.all(
+                color: first || isMe ? c.flame : c.borderDefault,
+                width: isMe ? Stroke.thick : Stroke.hairline,
               ),
             ),
             child: Center(
               child: Text(
+                AppConstants.avatarEmojis[avatarIndex],
+                style: const TextStyle(fontSize: 28),
+              ),
+            ),
+          ),
+          const SizedBox(height: Sp.x2),
+          Text(
+            name,
+            style: DsType.caption.on(isMe ? c.accentText : c.textPrimary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            _timeStr(minutes),
+            style: DsType.caption.on(first ? c.accentText : c.textTertiary).tnum,
+          ),
+          const SizedBox(height: Sp.x2),
+          Container(
+            height: podiumHeight,
+            margin: const EdgeInsets.symmetric(horizontal: Sp.x1),
+            decoration: DsSurface.of(
+              c,
+              DsElevation.e1,
+              radius: const BorderRadius.vertical(top: Radius.circular(R.sm)),
+              tone: first ? c.flameTint : null,
+              borderColor: first ? c.flame : null,
+            ),
+            child: Center(
+              child: Text(
                 label,
-                style: TextStyle(
-                  color: rankColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: DsType.subhead
+                    .on(first ? c.accentText : c.textSecondary)
+                    .tnum,
               ),
             ),
           ),
@@ -413,109 +438,57 @@ class _RankingScreenState extends State<RankingScreen>
       ),
     );
   }
+}
 
-  Widget _buildPeriodChip(String period, String label) {
-    final isSelected = _period == period;
-    return GestureDetector(
-      onTap: () => _changePeriod(period),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: isSelected ? AppTheme.primaryGradient : null,
-          color: isSelected ? null : AppTheme.of(context).surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : AppTheme.of(context).borderMid,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 0,
-                  )
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.of(context).textSecondary,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
+class _RankItem extends StatelessWidget {
+  const _RankItem({required this.item, required this.myUid});
 
-  Widget _buildRankItem(Map<String, dynamic> item, String myUid) {
-    final rank = item['rank'] as int? ?? 0;
-    final name = item['name'] as String? ?? '집중러';
-    final minutes = item['minutes'] as int? ?? 0;
-    final streak = item['streak'] as int? ?? 0;
-    final avatarIndex =
-        ((item['avatarIndex'] as int?) ?? 0).clamp(0, AppConstants.avatarEmojis.length - 1);
-    final isMe = item['uid'] == myUid;
+  final Map<String, dynamic> item;
+  final String myUid;
 
-    final h = minutes ~/ 60;
-    final m = minutes % 60;
-    final timeStr = h > 0 ? '$h시간${m > 0 ? ' $m분' : ''}' : '$m분';
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
+    final int rank = item['rank'] as int? ?? 0;
+    final String name = item['name'] as String? ?? '집중러';
+    final int minutes = item['minutes'] as int? ?? 0;
+    final int streak = item['streak'] as int? ?? 0;
+    final int avatarIndex =
+        ((item['avatarIndex'] as int?) ?? 0)
+            .clamp(0, AppConstants.avatarEmojis.length - 1);
+    final bool isMe = item['uid'] == myUid;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isMe
-            ? AppTheme.primaryColor.withValues(alpha: 0.08)
-            : AppTheme.of(context).card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isMe
-              ? AppTheme.primaryColor.withValues(alpha: 0.4)
-              : AppTheme.of(context).borderSubtle,
-          width: isMe ? 1.5 : 1,
-        ),
-        boxShadow: isMe
-            ? [
-                BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  spreadRadius: 0,
-                )
-              ]
-            : null,
+      margin: const EdgeInsets.only(bottom: Sp.x2),
+      padding: const EdgeInsets.symmetric(horizontal: Sp.x4, vertical: Sp.x3),
+      decoration: DsSurface.of(
+        c,
+        DsElevation.e1,
+        tone: isMe ? c.flameTint : null,
+        borderColor: isMe ? c.flame : null,
       ),
       child: Row(
-        children: [
-          // 순위 번호
+        children: <Widget>[
           SizedBox(
             width: 36,
             child: Text(
               '$rank',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textMuted,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: DsType.subhead
+                  .on(isMe ? c.accentText : c.textTertiary)
+                  .tnum,
             ),
           ),
-          const SizedBox(width: 10),
-          // 아바타
+          const SizedBox(width: Sp.x2),
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.of(context).surface,
+              color: c.surface,
               border: Border.all(
-                color: isMe
-                    ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                    : AppTheme.of(context).borderMid,
+                color: isMe ? c.flame : c.borderDefault,
+                width: Stroke.hairline,
               ),
             ),
             child: Center(
@@ -525,73 +498,45 @@ class _RankingScreenState extends State<RankingScreen>
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          // 이름 + 스트릭
+          const SizedBox(width: Sp.x3),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 Row(
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        color: isMe
-                            ? AppTheme.primaryColor
-                            : AppTheme.of(context).textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                  children: <Widget>[
+                    Flexible(
+                      child: Text(
+                        name,
+                        style: DsType.bodyStrong
+                            .on(isMe ? c.accentText : c.textPrimary),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (isMe) ...[
-                      const SizedBox(width: 6),
+                    if (isMe) ...<Widget>[
+                      const SizedBox(width: Sp.x2),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          '나',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                            horizontal: Sp.x2, vertical: 2),
+                        decoration: DsSurface.tint(c, c.flame, radius: R.rSm),
+                        child: Text('나', style: DsType.micro.on(c.onAccent)),
                       ),
                     ],
                   ],
                 ),
-                if (streak > 0) ...[
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.local_fire_department,
-                          size: 12, color: AppTheme.secondaryColor),
-                      const SizedBox(width: 2),
-                      Text(
-                        '$streak일 연속',
-                        style: TextStyle(
-                          color: AppTheme.of(context).textMuted,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+                if (streak > 0)
+                  Text(
+                    '$streak일 연속',
+                    style: DsType.caption.on(c.textTertiary).tnum,
                   ),
-                ],
               ],
             ),
           ),
-          // 집중 시간
           Text(
-            timeStr,
-            style: TextStyle(
-              color: isMe ? AppTheme.primaryColor : AppTheme.of(context).textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            _timeStr(minutes),
+            style: DsType.bodyStrong
+                .on(isMe ? c.accentText : c.textPrimary)
+                .tnum,
           ),
         ],
       ),
