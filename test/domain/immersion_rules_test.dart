@@ -85,4 +85,9 @@ void main() {
       expect(ImmersionRules.timerLabel(-5), '00:00');
     });
   });
+
+  test('dimBrightness 는 꺼지지 않게 낮고, 타이머는 읽히게 둔다', () {
+    expect(ImmersionRules.dimBrightness, greaterThan(0));
+    expect(ImmersionRules.dimBrightness, lessThanOrEqualTo(0.1));
+  });
 }

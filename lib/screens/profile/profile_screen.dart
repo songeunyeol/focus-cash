@@ -5,6 +5,7 @@ import '../../config/constants.dart';
 import '../../config/theme.dart';
 import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/immersion_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/level_frame.dart';
 import '../../config/legal_texts.dart';
@@ -618,6 +619,51 @@ class ProfileScreen extends StatelessWidget {
               ),
               value: themeProvider.isDark,
               onChanged: (_) => themeProvider.toggle(),
+              activeThumbColor: AppTheme.primaryColor,
+              activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        Consumer<ImmersionProvider>(
+          builder: (context, immersion, _) => Container(
+            decoration: BoxDecoration(
+              color: AppTheme.of(context).card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.of(context).borderSubtle),
+            ),
+            child: SwitchListTile(
+              secondary: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.of(context).surface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.nights_stay_outlined,
+                  color: AppTheme.of(context).textSecondary,
+                  size: 18,
+                ),
+              ),
+              title: Text(
+                '몰입 모드',
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                '집중 중 15초 무조작이면 화면을 어둡게 해요',
+                style: TextStyle(
+                  color: AppTheme.of(context).textMuted,
+                  fontSize: 12,
+                ),
+              ),
+              value: immersion.enabled,
+              onChanged: immersion.setEnabled,
               activeThumbColor: AppTheme.primaryColor,
               activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.5),
             ),

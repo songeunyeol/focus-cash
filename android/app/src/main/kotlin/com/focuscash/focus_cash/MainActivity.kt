@@ -45,6 +45,19 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isScreenOff" -> result.success(isScreenOff())
+                    "getBrightness" -> {
+                        val current = window.attributes.screenBrightness
+                        result.success(current.toDouble())
+                    }
+                    "setBrightness" -> {
+                        val value = call.argument<Double>("value") ?: -1.0
+                        runOnUiThread {
+                            val params = window.attributes
+                            params.screenBrightness = value.toFloat()
+                            window.attributes = params
+                        }
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

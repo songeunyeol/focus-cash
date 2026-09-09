@@ -6,10 +6,11 @@ import 'package:provider/provider.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/constants.dart';
-import '../../config/theme.dart';
 import '../../config/routes.dart';
+import '../../design/ds.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/focus_provider.dart';
+import '../../providers/immersion_provider.dart';
 import '../../services/screen_state_service.dart';
 import '../../services/ad_service.dart';
 import '../../services/analytics_service.dart';
@@ -319,7 +320,7 @@ class _FocusScreenState extends State<FocusScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.of(context).bg,
+        backgroundColor: context.ds.bg,
         body: SafeArea(
           child: _buildBody(focusProvider),
         ),
@@ -346,6 +347,7 @@ class _FocusScreenState extends State<FocusScreen>
     return ImmersionShell(
       remainingSeconds: provider.remainingSeconds,
       caption: widget.tag.isNotEmpty ? widget.tag : null,
+      enabled: context.watch<ImmersionProvider>().enabled,
       onModeChanged: (immersed) => unawaited(
           AnalyticsService.instance.immersionToggled(entered: immersed)),
       child: Column(
@@ -366,8 +368,8 @@ class _FocusScreenState extends State<FocusScreen>
                 if (widget.tag.isNotEmpty)
                   Chip(
                     label: Text(widget.tag),
-                    backgroundColor: AppTheme.accentGreen.withAlpha(30),
-                    labelStyle: const TextStyle(color: AppTheme.accentGreen),
+                    backgroundColor: context.ds.success.withAlpha(30),
+                    labelStyle: TextStyle(color: context.ds.success),
                   ),
 
                 const SizedBox(height: 16),
@@ -382,25 +384,20 @@ class _FocusScreenState extends State<FocusScreen>
                     children: [
                       Text(
                         _formatTime(provider.remainingSeconds),
-                        style: TextStyle(
-                          color: AppTheme.of(context).textPrimary,
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                        ),
+                        style: DsType.timerDisplay.on(context.ds.textPrimary),
                       ),
                       SizedBox(height: 6),
                       Text(
                         '${provider.elapsedMinutes}분 집중 중',
                         style: TextStyle(
-                          color: AppTheme.of(context).textSecondary,
+                          color: context.ds.textSecondary,
                           fontSize: 14,
                         ),
                       ),
                     ],
                   ),
-                  progressColor: AppTheme.primaryColor,
-                  backgroundColor: AppTheme.of(context).surface,
+                  progressColor: context.ds.flame,
+                  backgroundColor: context.ds.surface,
                   circularStrokeCap: CircularStrokeCap.round,
                   animation: false,
                 ),
@@ -415,17 +412,17 @@ class _FocusScreenState extends State<FocusScreen>
                     icon: const Icon(Icons.fast_forward, size: 18),
                     label: const Text('[테스트] 즉시 완료'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.secondaryColor,
-                      side: const BorderSide(color: AppTheme.secondaryColor),
+                      foregroundColor: context.ds.flame,
+                      side: BorderSide(color: context.ds.flame),
                     ),
                   ),
 
                 // 포기하기
                 TextButton(
                   onPressed: _handleAbandon,
-                  child: const Text(
+                  child: Text(
                     '포기하기',
-                    style: TextStyle(color: AppTheme.accentRed, fontSize: 14),
+                    style: DsType.body.on(context.ds.danger),
                   ),
                 ),
 
@@ -450,7 +447,9 @@ class _FocusScreenState extends State<FocusScreen>
         ? '$hours시간${mins > 0 ? ' $mins분' : ''}'
         : '$mins분';
 
-    return FadeTransition(
+    return DsModeScope(
+      mode: DsMode.reward,
+      child: FadeTransition(
       opacity: _fadeAnim,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
@@ -465,13 +464,13 @@ class _FocusScreenState extends State<FocusScreen>
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: AppTheme.creditGold.withAlpha(30),
+                  color: context.ds.flame.withAlpha(30),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.celebration,
                   size: 56,
-                  color: AppTheme.creditGold,
+                  color: context.ds.flame,
                 ),
               ),
             ),
@@ -481,7 +480,7 @@ class _FocusScreenState extends State<FocusScreen>
             Text(
               '집중 완료! 🎉',
               style: TextStyle(
-                color: AppTheme.of(context).textPrimary,
+                color: context.ds.textPrimary,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -490,7 +489,7 @@ class _FocusScreenState extends State<FocusScreen>
             Text(
               '$timeStr 동안 집중했어요',
               style: TextStyle(
-                color: AppTheme.of(context).textSecondary,
+                color: context.ds.textSecondary,
                 fontSize: 16,
               ),
             ),
@@ -502,7 +501,7 @@ class _FocusScreenState extends State<FocusScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.of(context).card,
+                color: context.ds.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -511,51 +510,51 @@ class _FocusScreenState extends State<FocusScreen>
                     icon: Icons.timer,
                     label: '집중 시간',
                     value: timeStr,
-                    color: AppTheme.primaryColor,
+                    color: context.ds.flame,
                   ),
-                  Divider(color: AppTheme.of(context).surface, height: 24),
+                  Divider(color: DsSurface.divider(context.ds), height: 24),
                   _StatRow(
                     icon: Icons.monetization_on,
                     label: '획득 크레딧',
                     value: '+${provider.earnedCredits}',
-                    color: AppTheme.creditGold,
+                    color: context.ds.flame,
                   ),
                   if (provider.firstFocusBonus > 0) ...[
-                    Divider(color: AppTheme.of(context).surface, height: 24),
+                    Divider(color: DsSurface.divider(context.ds), height: 24),
                     _StatRow(
                       icon: Icons.card_giftcard,
                       label: '첫 집중 보너스',
                       value: '+${provider.firstFocusBonus}',
-                      color: AppTheme.creditGold,
+                      color: context.ds.flame,
                     ),
                   ],
                   if (widget.tag.isNotEmpty) ...[
-                    Divider(color: AppTheme.of(context).surface, height: 24),
+                    Divider(color: DsSurface.divider(context.ds), height: 24),
                     _StatRow(
                       icon: Icons.label,
                       label: '과목',
                       value: widget.tag,
-                      color: AppTheme.accentGreen,
+                      color: context.ds.success,
                     ),
                   ],
                   if (widget.hardcoreMode != 'normal') ...[
-                    Divider(color: AppTheme.of(context).surface, height: 24),
+                    Divider(color: DsSurface.divider(context.ds), height: 24),
                     _StatRow(
                       icon: Icons.local_fire_department,
                       label: '모드',
                       value: widget.hardcoreMode == 'hardcore'
                           ? '하드코어'
                           : '울트라',
-                      color: AppTheme.accentRed,
+                      color: context.ds.danger,
                     ),
                   ],
                   if (provider.earnedXp > 0) ...[
-                    Divider(color: AppTheme.of(context).surface, height: 24),
+                    Divider(color: DsSurface.divider(context.ds), height: 24),
                     _StatRow(
                       icon: Icons.auto_awesome,
                       label: '획득 XP',
                       value: '+${provider.earnedXp} XP',
-                      color: AppTheme.secondaryColor,
+                      color: context.ds.flame,
                     ),
                   ],
                 ],
@@ -605,8 +604,8 @@ class _FocusScreenState extends State<FocusScreen>
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _rewardAdWatched
-                      ? AppTheme.of(context).surface
-                      : AppTheme.secondaryColor,
+                      ? context.ds.surface
+                      : context.ds.flame,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -634,7 +633,7 @@ class _FocusScreenState extends State<FocusScreen>
                   style: TextStyle(fontSize: 15),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.ds.flame,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -652,13 +651,14 @@ class _FocusScreenState extends State<FocusScreen>
               },
               child: Text(
                 '홈으로 돌아가기',
-                style: TextStyle(color: AppTheme.of(context).textSecondary),
+                style: TextStyle(color: context.ds.textSecondary),
               ),
             ),
 
             const SizedBox(height: 20),
           ],
         ),
+      ),
       ),
     );
   }
@@ -671,12 +671,12 @@ class _FocusScreenState extends State<FocusScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.sentiment_dissatisfied,
-                size: 80, color: AppTheme.accentRed),
+                size: 80, color: context.ds.danger),
             SizedBox(height: 24),
             Text(
               '집중 포기',
               style: TextStyle(
-                color: AppTheme.of(context).textPrimary,
+                color: context.ds.textPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
@@ -686,7 +686,7 @@ class _FocusScreenState extends State<FocusScreen>
               '${provider.elapsedMinutes}분 집중했어요.\n다음엔 더 잘 할 수 있을 거예요!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.of(context).textSecondary,
+                color: context.ds.textSecondary,
                 fontSize: 16,
                 height: 1.5,
               ),
@@ -740,7 +740,7 @@ class _StatRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: AppTheme.of(context).textSecondary,
+            color: context.ds.textSecondary,
             fontSize: 14,
           ),
         ),
@@ -822,66 +822,42 @@ class _LevelUpBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DsColors c = context.ds;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.35),
-            blurRadius: 16,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Sp.x4, vertical: Sp.x4),
+      decoration: DsSurface.tint(c, c.flame, radius: R.rMd),
       child: Row(
-        children: [
+        children: <Widget>[
           Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.15),
-              border: Border.all(color: Colors.white38, width: 1.5),
+              color: c.onAccent.withValues(alpha: 0.15),
+              border: Border.all(color: c.onAccent.withValues(alpha: 0.4)),
             ),
             child: Center(
               child: Text(
                 '$newLevel',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: DsType.heading.on(c.onAccent).tnum,
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: Sp.x3),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '레벨 업!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              children: <Widget>[
+                Text('레벨 업', style: DsType.subhead.on(c.onAccent)),
                 Text(
                   'Lv.$newLevel · ${AppConstants.titleForLevel(newLevel)}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
+                  style: DsType.caption.on(c.onAccent.withValues(alpha: 0.8)),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_upward_rounded,
-              color: Colors.white, size: 22),
+          Icon(Icons.arrow_upward_rounded, color: c.onAccent, size: 22),
         ],
       ),
     );
@@ -905,35 +881,23 @@ class _NewBadgesCard extends StatelessWidget {
 
     if (badges.isEmpty) return const SizedBox.shrink();
 
+    final DsColors c = context.ds;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.of(context).card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.creditGold.withValues(alpha: 0.4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.creditGold.withValues(alpha: 0.1),
-            blurRadius: 12,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(Sp.x4),
+      decoration: DsSurface.e1(c, tone: c.flameTint),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.emoji_events_rounded,
-                  color: AppTheme.creditGold, size: 18),
+              Icon(Icons.emoji_events_rounded,
+                  color: context.ds.flame, size: 18),
               const SizedBox(width: 8),
               Text(
                 '새 배지 ${badges.length}개 획득!',
-                style: const TextStyle(
-                  color: AppTheme.creditGold,
+                style: TextStyle(
+                  color: context.ds.flame,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -949,10 +913,10 @@ class _NewBadgesCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.creditGold.withValues(alpha: 0.1),
+                  color: context.ds.flame.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: AppTheme.creditGold.withValues(alpha: 0.3),
+                    color: context.ds.flame.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -964,7 +928,7 @@ class _NewBadgesCard extends StatelessWidget {
                     Text(
                       b['name'] as String,
                       style: TextStyle(
-                        color: AppTheme.of(context).textPrimary,
+                        color: context.ds.textPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1042,9 +1006,9 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
     final canAbandon = _remaining == 0;
 
     return AlertDialog(
-      backgroundColor: AppTheme.of(context).card,
+      backgroundColor: context.ds.surface,
       title: Text('집중을 포기할까요?',
-          style: TextStyle(color: AppTheme.of(context).textPrimary)),
+          style: TextStyle(color: context.ds.textPrimary)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1053,10 +1017,10 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              color: AppTheme.accentRed.withValues(alpha: 0.08),
+              color: context.ds.danger.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: AppTheme.accentRed.withValues(alpha: 0.3)),
+                  color: context.ds.danger.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -1065,15 +1029,15 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
                       ? '막 시작했는데 벌써요?'
                       : '${widget.elapsedMinutes}분 집중 중',
                   style: TextStyle(
-                      color: AppTheme.of(context).textSecondary, fontSize: 13),
+                      color: context.ds.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   widget.lostCredits == 0
                       ? '아직 쌓인 크레딧은 없지만\n집중 기록이 사라집니다'
                       : '${widget.lostCredits} 크레딧이 사라집니다',
-                  style: const TextStyle(
-                    color: AppTheme.accentRed,
+                  style: TextStyle(
+                    color: context.ds.danger,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1091,7 +1055,7 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
                 _message,
                 key: ValueKey(_remaining),
                 style: TextStyle(
-                  color: AppTheme.of(context).textSecondary,
+                  color: context.ds.textSecondary,
                   fontSize: 13,
                 ),
                 textAlign: TextAlign.center,
@@ -1104,8 +1068,8 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
         // 계속 집중
         TextButton(
           onPressed: () => Navigator.of(context).pop(0),
-          child: const Text('계속 집중',
-              style: TextStyle(color: AppTheme.primaryColor)),
+          child: Text('계속 집중',
+              style: TextStyle(color: context.ds.flame)),
         ),
         // 그냥 포기 (카운트다운)
         TextButton(
@@ -1114,8 +1078,8 @@ class _NormalAbandonDialogState extends State<_NormalAbandonDialog> {
             canAbandon ? '그냥 포기' : '그냥 포기 ($_remaining)',
             style: TextStyle(
               color: canAbandon
-                  ? AppTheme.accentRed
-                  : AppTheme.of(context).textSecondary.withValues(alpha: 0.4),
+                  ? context.ds.danger
+                  : context.ds.textSecondary.withValues(alpha: 0.4),
             ),
           ),
         ),
@@ -1186,9 +1150,9 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
     final canAbandon = _remaining == 0;
 
     return AlertDialog(
-      backgroundColor: AppTheme.of(context).card,
+      backgroundColor: context.ds.surface,
       title: Text('집중을 포기할까요?',
-          style: TextStyle(color: AppTheme.of(context).textPrimary)),
+          style: TextStyle(color: context.ds.textPrimary)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1197,10 +1161,10 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              color: AppTheme.accentRed.withValues(alpha: 0.08),
+              color: context.ds.danger.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: AppTheme.accentRed.withValues(alpha: 0.3)),
+                  color: context.ds.danger.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -1208,7 +1172,7 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.local_fire_department,
-                        color: AppTheme.accentRed.withValues(alpha: 0.8),
+                        color: context.ds.danger.withValues(alpha: 0.8),
                         size: 14),
                     SizedBox(width: 4),
                     Text(
@@ -1216,7 +1180,7 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
                           ? '막 시작했는데 벌써요?'
                           : '${widget.elapsedMinutes}분 집중 중 · 하드코어',
                       style: TextStyle(
-                          color: AppTheme.of(context).textSecondary, fontSize: 13),
+                          color: context.ds.textSecondary, fontSize: 13),
                     ),
                   ],
                 ),
@@ -1225,8 +1189,8 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
                   widget.penaltyCredits == 0
                       ? '보유 크레딧의 10%가\n차감됩니다'
                       : '${widget.penaltyCredits} 크레딧 차감',
-                  style: const TextStyle(
-                    color: AppTheme.accentRed,
+                  style: TextStyle(
+                    color: context.ds.danger,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1237,7 +1201,7 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
                   Text(
                     '광고를 보면 면제받을 수 있어요',
                     style: TextStyle(
-                        color: AppTheme.of(context).textSecondary, fontSize: 12),
+                        color: context.ds.textSecondary, fontSize: 12),
                   ),
                 ],
               ],
@@ -1252,7 +1216,7 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
                 _message,
                 key: ValueKey(_remaining),
                 style: TextStyle(
-                    color: AppTheme.of(context).textSecondary, fontSize: 13),
+                    color: context.ds.textSecondary, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -1263,14 +1227,14 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
         // 계속 집중
         TextButton(
           onPressed: () => Navigator.of(context).pop(0),
-          child: const Text('계속 집중',
-              style: TextStyle(color: AppTheme.primaryColor)),
+          child: Text('계속 집중',
+              style: TextStyle(color: context.ds.flame)),
         ),
         // 광고 보고 패널티 면제
         TextButton(
           onPressed: () => Navigator.of(context).pop(1),
-          child: const Text('광고로 면제',
-              style: TextStyle(color: AppTheme.creditGold)),
+          child: Text('광고로 면제',
+              style: TextStyle(color: context.ds.flame)),
         ),
         // 그냥 포기 (카운트다운)
         TextButton(
@@ -1279,8 +1243,8 @@ class _HardcoreAbandonDialogState extends State<_HardcoreAbandonDialog> {
             canAbandon ? '그냥 포기' : '그냥 포기 ($_remaining)',
             style: TextStyle(
               color: canAbandon
-                  ? AppTheme.accentRed
-                  : AppTheme.of(context).textSecondary.withValues(alpha: 0.4),
+                  ? context.ds.danger
+                  : context.ds.textSecondary.withValues(alpha: 0.4),
             ),
           ),
         ),

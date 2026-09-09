@@ -8,6 +8,10 @@ abstract final class ImmersionRules {
   /// 마지막 조작 후 이 시간이 지나면 몰입으로 들어간다.
   static const Duration idleThreshold = Duration(seconds: 15);
 
+  /// 몰입 중 창 밝기 (0~1). OLED 픽셀을 거의 끄되 타이머는 읽을 수 있게 둔다.
+  /// 시스템 기본값(-1)이 아니라 앱 창에만 적용한다.
+  static const double dimBrightness = 0.04;
+
   /// 몰입 진입 여부.
   ///
   /// [enabled] 가 false 면 절대 들어가지 않는다 (설정으로 끄는 경로).

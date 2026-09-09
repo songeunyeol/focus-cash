@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../design/ds.dart';
 import '../domain/immersion_rules.dart';
+import '../services/screen_brightness_service.dart';
 
 /// 몰입 모드 껍데기 — 집중 화면의 "집중 중" 뷰를 감싼다.
 ///
@@ -13,7 +14,7 @@ import '../domain/immersion_rules.dart';
 /// 아무 곳이나 누르면 즉시 원래 화면으로 돌아온다.
 ///
 /// 시스템 UI(상태바·내비바)는 몰입 중에만 immersiveSticky 로 숨기고, 나갈 때 edgeToEdge 로 복원한다.
-/// 화면 밝기 저하는 플랫폼 채널이 필요해 이 골격에는 없다 (TODO: screen_brightness 도입 시 여기서).
+/// 창 밝기는 몰입 중에만 [ImmersionRules.dimBrightness] 로 낮추고, 나갈 때 시스템 값으로 되돌린다.
 class ImmersionShell extends StatefulWidget {
   const ImmersionShell({
     super.key,
@@ -82,6 +83,8 @@ class _ImmersionShellState extends State<ImmersionShell> {
   void _enter() {
     setState(() => _immersed = true);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    unawaited(ScreenBrightnessService.setWindowBrightness(
+        ImmersionRules.dimBrightness));
     widget.onModeChanged?.call(true);
   }
 
@@ -95,6 +98,7 @@ class _ImmersionShellState extends State<ImmersionShell> {
 
   void _restoreSystemUi() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(ScreenBrightnessService.setWindowBrightness(null));
   }
 
   void _touched(PointerEvent _) {
