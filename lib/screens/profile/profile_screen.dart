@@ -7,7 +7,7 @@ import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/level_frame.dart';
-import '../auth/signup_terms_screen.dart';
+import '../../config/legal_texts.dart';
 import '../records/records_screen.dart';
 import '../social/friends_screen.dart';
 import 'my_gifticons_screen.dart';
@@ -21,20 +21,7 @@ class ProfileScreen extends StatelessWidget {
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: ShaderMask(
-          shaderCallback: (bounds) =>
-              AppTheme.primaryGradient.createShader(bounds),
-          child: const Text(
-            '프로필',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ),
-      ),
+      appBar: AppBar(title: const Text('프로필')),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.all(20),
@@ -76,16 +63,10 @@ class ProfileScreen extends StatelessWidget {
                 child: Container(
                   width: 100,
                   height: 100,
+                  // 그라디언트·글로우 제거. 등급은 LevelFrame 의 형태가 말하고, 면은 조용히 받친다.
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppTheme.primaryGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        spreadRadius: 0,
-                      ),
-                    ],
+                    color: AppTheme.of(context).elevated,
                   ),
                   child: Center(
                     child: Text(emoji, style: const TextStyle(fontSize: 48)),
@@ -256,22 +237,16 @@ class ProfileScreen extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       decoration: BoxDecoration(
-                        gradient: selected ? AppTheme.primaryGradient : null,
-                        color: selected ? null : AppTheme.of(ctx).card,
-                        borderRadius: BorderRadius.circular(14),
-                        border: selected
-                            ? null
-                            : Border.all(color: AppTheme.of(ctx).borderSubtle),
-                        boxShadow: selected
-                            ? [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 10,
-                                  spreadRadius: 0,
-                                )
-                              ]
-                            : null,
+                        color: selected
+                            ? AppTheme.primaryColor.withValues(alpha: 0.14)
+                            : AppTheme.of(ctx).card,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: selected
+                              ? AppTheme.primaryColor
+                              : AppTheme.of(ctx).borderSubtle,
+                          width: selected ? 2 : 1,
+                        ),
                       ),
                       child: Center(
                         child: Text(

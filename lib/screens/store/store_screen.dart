@@ -100,18 +100,7 @@ class _StoreScreenState extends State<StoreScreen>
       backgroundColor: AppTheme.of(context).storeBg,
       appBar: AppBar(
         backgroundColor: AppTheme.of(context).storeBg,
-        title: ShaderMask(
-          shaderCallback: (bounds) =>
-              AppTheme.primaryGradient.createShader(bounds),
-          child: const Text(
-            '상점',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-            ),
-          ),
-        ),
+        title: const Text('상점'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -1743,15 +1732,8 @@ class _ExchangeListTile extends StatelessWidget {
                 height: 38,
                 decoration: canAfford
                     ? BoxDecoration(
-                        gradient: AppTheme.primaryGradient,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                            blurRadius: 10,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
+                        color: AppTheme.primaryColor,
+                        borderRadius: BorderRadius.circular(6),
                       )
                     : BoxDecoration(
                         color: AppTheme.of(context).storeCard,

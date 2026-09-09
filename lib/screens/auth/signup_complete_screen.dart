@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/theme.dart';
-import '../../config/routes.dart';
-import '../../config/constants.dart';
-import '../../providers/auth_provider.dart';
 
+import '../../config/constants.dart';
+import '../../config/routes.dart';
+import '../../design/ds.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/common/ds_button.dart';
+
+/// 가입 완료 — 보상 모드의 첫 순간.
+///
+/// 이 화면만 [DsMode.reward] 로 감싼다. 축하는 여기서 하고, 다음 화면(홈)은 다시 조용하다.
+/// 그라디언트·글로우 대신 스케일 인 + 액센트 틴트 면으로 "순간"을 만든다.
 class SignupCompleteScreen extends StatefulWidget {
   const SignupCompleteScreen({super.key});
 
@@ -14,21 +20,16 @@ class SignupCompleteScreen extends StatefulWidget {
 
 class _SignupCompleteScreenState extends State<SignupCompleteScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnim;
-  late Animation<double> _fadeAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _scaleAnim = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
-    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-    _controller.forward();
-  }
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  )..forward();
+  late final Animation<double> _scale =
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.3, 1, curve: Curves.easeOut),
+  );
 
   @override
   void dispose() {
@@ -38,130 +39,82 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
 
   @override
   Widget build(BuildContext context) {
+    final DsColors c = context.ds;
     final user = context.read<AuthProvider>().user;
-    final nickname = user?.displayName ?? '님';
+    final String nickname =
+        (user?.displayName.isNotEmpty ?? false) ? user!.displayName : '집중러';
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-
-              // 완료 아이콘 — 그라디언트 + 글로우
-              ScaleTransition(
-                scale: _scaleAnim,
-                child: Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    margin: const EdgeInsets.only(bottom: 32),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.5),
-                          blurRadius: 32,
-                          spreadRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.check_rounded,
-                        size: 64,
-                        color: Colors.white,
+    return DsModeScope(
+      mode: DsMode.reward,
+      child: Scaffold(
+        backgroundColor: c.bg,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Sp.x6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const Spacer(flex: 3),
+                ScaleTransition(
+                  scale: _scale,
+                  child: Center(
+                    child: Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        color: c.flame,
+                        shape: BoxShape.circle,
                       ),
+                      child: Icon(Icons.check_rounded,
+                          size: 52, color: c.onAccent),
                     ),
                   ),
                 ),
-              ),
-
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: Column(
-                  children: [
-                    // 환영 텍스트 — ShaderMask 그라디언트
-                    ShaderMask(
-                      shaderCallback: (bounds) =>
-                          AppTheme.primaryGradient.createShader(bounds),
-                      child: Text(
-                        '$nickname 환영해요! 🎉',
+                const SizedBox(height: Sp.x8),
+                FadeTransition(
+                  opacity: _fade,
+                  child: Column(
+                    children: <Widget>[
+                      Text(
+                        '$nickname 님, 준비됐어요',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: DsType.title.on(c.textPrimary),
                       ),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Focus Cash 가입을 완료했어요.\n지금 바로 집중 타이머를 시작해보세요!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.of(context).textSecondary,
-                        fontSize: 15,
-                        height: 1.6,
+                      const SizedBox(height: Sp.x3),
+                      Text(
+                        '가입이 끝났습니다.\n첫 집중을 완료하면 보너스가 지급됩니다.',
+                        textAlign: TextAlign.center,
+                        style: DsType.body.on(c.textSecondary),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // 가입 보너스 카드 — primaryGradient 테마와 통일
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.35),
-                        blurRadius: 20,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Text('🎁', style: TextStyle(fontSize: 40)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              '첫 집중 완료 보너스',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '+${AppConstants.firstFocusBonus} 크레딧',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Text(
-                              '첫 집중을 완료하면 바로 지급돼요',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
+                      const SizedBox(height: Sp.x8),
+                      Container(
+                        padding: Sp.card,
+                        decoration: DsSurface.tint(c, c.flameTint,
+                            radius: R.rMd, border: true),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.card_giftcard_rounded,
+                                color: c.flame, size: 28),
+                            const SizedBox(width: Sp.x4),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text('첫 집중 완료 보너스',
+                                      style: DsType.caption
+                                          .on(c.textSecondary)),
+                                  const SizedBox(height: Sp.x1),
+                                  Text(
+                                    '+${AppConstants.firstFocusBonus} 크레딧',
+                                    style: DsType.heading
+                                        .on(c.accentText)
+                                        .tnum,
+                                  ),
+                                  const SizedBox(height: Sp.x1),
+                                  Text('10분만 집중해도 받을 수 있어요',
+                                      style: DsType.micro
+                                          .on(c.textTertiary)),
+                                ],
                               ),
                             ),
                           ],
@@ -170,36 +123,16 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
                     ],
                   ),
                 ),
-              ),
-
-              const Spacer(),
-
-              // 시작 버튼 — glowButton
-              Container(
-                height: 54,
-                decoration: AppTheme.glowButton,
-                child: ElevatedButton(
+                const Spacer(flex: 4),
+                DsButton(
+                  label: '집중 시작하기',
+                  size: DsButtonSize.hero,
                   onPressed: () => Navigator.of(context)
                       .pushReplacementNamed(AppRoutes.home),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    '집중 시작하기 🚀',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: Sp.x6),
+              ],
+            ),
           ),
         ),
       ),
