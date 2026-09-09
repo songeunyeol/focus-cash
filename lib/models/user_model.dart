@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../domain/focus_day.dart' as focus_day;
+
 class UserModel {
   final String uid;
   final String phoneNumber;
@@ -8,6 +10,10 @@ class UserModel {
   final int todayCredits;
   final int totalFocusMinutes;
   final int todayFocusMinutes;
+
+  /// 'YYYY-MM-DD'. [todayFocusMinutes]가 어느 날 값인지.
+  /// 읽기 시 [effectiveTodayFocusMinutes]로 날짜가 다르면 0 처리한다.
+  final String focusDate;
   final int currentStreak;
   final int longestStreak;
   final bool isPremium;
@@ -45,6 +51,7 @@ class UserModel {
     this.todayCredits = 0,
     this.totalFocusMinutes = 0,
     this.todayFocusMinutes = 0,
+    this.focusDate = '',
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.isPremium = false,
@@ -76,6 +83,7 @@ class UserModel {
     int? todayCredits,
     int? totalFocusMinutes,
     int? todayFocusMinutes,
+    String? focusDate,
     int? currentStreak,
     int? longestStreak,
     bool? isPremium,
@@ -106,6 +114,7 @@ class UserModel {
       todayCredits: todayCredits ?? this.todayCredits,
       totalFocusMinutes: totalFocusMinutes ?? this.totalFocusMinutes,
       todayFocusMinutes: todayFocusMinutes ?? this.todayFocusMinutes,
+      focusDate: focusDate ?? this.focusDate,
       currentStreak: currentStreak ?? this.currentStreak,
       longestStreak: longestStreak ?? this.longestStreak,
       isPremium: isPremium ?? this.isPremium,
@@ -139,6 +148,7 @@ class UserModel {
       'todayCredits': todayCredits,
       'totalFocusMinutes': totalFocusMinutes,
       'todayFocusMinutes': todayFocusMinutes,
+      'focusDate': focusDate,
       'currentStreak': currentStreak,
       'longestStreak': longestStreak,
       'isPremium': isPremium,
@@ -181,6 +191,7 @@ class UserModel {
       todayCredits: map['todayCredits'] as int? ?? 0,
       totalFocusMinutes: map['totalFocusMinutes'] as int? ?? 0,
       todayFocusMinutes: map['todayFocusMinutes'] as int? ?? 0,
+      focusDate: map['focusDate'] as String? ?? '',
       currentStreak: map['currentStreak'] as int? ?? 0,
       longestStreak: map['longestStreak'] as int? ?? 0,
       isPremium: map['isPremium'] as bool? ?? false,
@@ -206,4 +217,12 @@ class UserModel {
       firstFocusBonusGiven: map['firstFocusBonusGiven'] as bool? ?? false,
     );
   }
+
+  /// 화면/집계용 오늘 분. [focusDate]가 오늘이 아니면 0.
+  int effectiveTodayFocusMinutes([DateTime? now]) =>
+      focus_day.effectiveTodayFocusMinutes(
+        todayFocusMinutes: todayFocusMinutes,
+        focusDate: focusDate,
+        now: now,
+      );
 }

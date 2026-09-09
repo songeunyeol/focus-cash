@@ -61,7 +61,7 @@ class _StatsTabState extends State<StatsTab>
     final goal = context.watch<GoalProvider>();
 
     final int totalMinutes = user?.totalFocusMinutes ?? 0;
-    final int todayMinutes = user?.todayFocusMinutes ?? 0;
+    final int todayMinutes = user?.effectiveTodayFocusMinutes() ?? 0;
     final int currentStreak = user?.currentStreak ?? 0;
     final int longestStreak = user?.longestStreak ?? 0;
     final DateTime createdAt = user?.createdAt ?? DateTime.now();

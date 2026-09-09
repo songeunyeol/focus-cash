@@ -219,7 +219,7 @@ class _HomePage extends StatelessWidget {
     final AuthProvider auth = context.watch<AuthProvider>();
     final user = auth.user;
 
-    final int todayMinutes = user?.todayFocusMinutes ?? 0;
+    final int todayMinutes = user?.effectiveTodayFocusMinutes() ?? 0;
     // 하루 목표는 기록 > 통계 탭에서 바꾼다 (기기 로컬 저장).
     final int goal = context.watch<GoalProvider>().dailyGoalMinutes;
     final double progress = goal == 0 ? 0 : todayMinutes / goal;

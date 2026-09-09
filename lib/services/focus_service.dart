@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import '../config/constants.dart';
 import '../domain/badge_rules.dart';
+import '../domain/focus_day.dart';
 import '../domain/streak_rules.dart';
 import '../models/focus_session.dart';
 
@@ -125,12 +126,21 @@ class FocusService {
 
       final data = userDoc.data()!;
       final now = DateTime.now();
-      final todayKey = _dateKey(now);
+      final todayKey = focusDateKey(now);
 
       final totalBefore = data['totalFocusMinutes'] as int? ?? 0;
       final todayBefore = (data['focusDate'] as String? ?? '') == todayKey
           ? (data['todayFocusMinutes'] as int? ?? 0)
           : 0;
+
+      // 포기(completed=false)는 세션 문서만 남기고 일일/누적/주간 집계에는 넣지 않는다.
+      // 예전에 포기 분도 todayFocusMinutes에 더해서 홈 "오늘"만 부풀고 "이번 주"(완료만)는 0인 불일치가 났다.
+      if (!completed) {
+        transaction.update(userRef, {
+          'lastActiveAt': now.toIso8601String(),
+        });
+        return SessionOutcome.empty;
+      }
 
       final updates = <String, dynamic>{
         'totalFocusMinutes': totalBefore + focusMinutes,
@@ -138,11 +148,6 @@ class FocusService {
         'focusDate': todayKey,
         'lastActiveAt': now.toIso8601String(),
       };
-
-      if (!completed) {
-        transaction.update(userRef, updates);
-        return SessionOutcome.empty;
-      }
 
       // ── 스트릭 ─────────────────────────────────────────
       // 기준은 lastFocusDate. 구버전 문서에는 없으므로 lastActiveAt 으로 한 번 폴백한다.
@@ -408,7 +413,7 @@ class FocusService {
     final result = <String, int>{};
     for (final doc in snap.docs) {
       final s = FocusSession.fromMap(doc.data());
-      final key = _dateKey(s.startedAt);
+      final key = focusDateKey(s.startedAt);
       result[key] = (result[key] ?? 0) + s.actualMinutes;
     }
     return result;
@@ -430,6 +435,4 @@ class FocusService {
     return snap.docs.map((d) => FocusSession.fromMap(d.data())).toList();
   }
 
-  static String _dateKey(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
