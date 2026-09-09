@@ -62,6 +62,10 @@ class AnalyticsService {
   Future<void> rouletteSpin({required int cost, required String prize}) =>
       _log('roulette_spin', {'cost': cost, 'prize': prize});
 
+  /// 몰입 모드 진입/이탈. 얼마나 자주 켜지는지가 광고 노출 감소량이기도 하다.
+  Future<void> immersionToggled({required bool entered}) =>
+      _log('immersion_toggle', {'entered': entered ? 1 : 0});
+
   Future<void> raffleEnter({required String roomId, required int tickets}) =>
       _log('raffle_enter', {'room_id': roomId, 'tickets': tickets});
 }

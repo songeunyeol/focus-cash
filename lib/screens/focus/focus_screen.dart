@@ -12,6 +12,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/focus_provider.dart';
 import '../../services/screen_state_service.dart';
 import '../../services/ad_service.dart';
+import '../../services/analytics_service.dart';
+import '../../widgets/immersion_shell.dart';
 
 class FocusScreen extends StatefulWidget {
   final int focusMinutes;
@@ -339,7 +341,14 @@ class _FocusScreenState extends State<FocusScreen>
   }
 
   Widget _buildFocusingView(FocusProvider provider) {
-    return Column(
+    // 15초 무조작이면 ImmersionShell 이 아래 트리를 통째로 내리고 검정 화면 + 타이머만 남긴다.
+    // 배너 광고도 그때 트리에서 사라진다 (가림이 아니라 제거).
+    return ImmersionShell(
+      remainingSeconds: provider.remainingSeconds,
+      caption: widget.tag.isNotEmpty ? widget.tag : null,
+      onModeChanged: (immersed) => unawaited(
+          AnalyticsService.instance.immersionToggled(entered: immersed)),
+      child: Column(
       children: [
         // 배너 1 - 최상단
         const _BannerAdWidget(size: AdSize.largeBanner),
@@ -430,6 +439,7 @@ class _FocusScreenState extends State<FocusScreen>
         // 배너 2 - 최하단
         const _BannerAdWidget(size: AdSize.banner),
       ],
+      ),
     );
   }
 
