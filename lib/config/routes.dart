@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../design/ds_theme.dart';
 import 'page_transitions.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_terms_screen.dart';
@@ -54,13 +55,19 @@ class AppRoutes {
             page: const FocusSetupScreen(), settings: settings);
       case focus:
         final args = settings.arguments as Map<String, dynamic>;
+        // 집중 화면은 테마 설정과 무관하게 항상 다크다.
+        // OLED 에서 흰 배경은 전력 소모가 가장 크고, 120분짜리 화면이 바로 이 화면이다.
+        // 밝기 저하만으로는 흰 픽셀의 소비를 못 줄이고, 토글은 대부분 건드리지 않는다.
         return sharedAxisRoute(
           settings: settings,
-          page: FocusScreen(
-            focusMinutes: args['focusMinutes'] as int,
-            hardcoreMode: args['hardcoreMode'] as String? ?? 'normal',
-            tag: args['tag'] as String? ?? '',
-            watchAdOnStart: args['watchAdOnStart'] as bool? ?? false,
+          page: Theme(
+            data: DsTheme.dark(),
+            child: FocusScreen(
+              focusMinutes: args['focusMinutes'] as int,
+              hardcoreMode: args['hardcoreMode'] as String? ?? 'normal',
+              tag: args['tag'] as String? ?? '',
+              watchAdOnStart: args['watchAdOnStart'] as bool? ?? false,
+            ),
           ),
         );
       case store:

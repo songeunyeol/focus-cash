@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'ds_colors.dart';
 import 'ds_dimens.dart';
@@ -21,6 +22,18 @@ abstract final class DsTheme {
   static ThemeData dark() => _build(DsColors.dark, Brightness.dark);
 
   static ThemeData light() => _build(DsColors.light, Brightness.light);
+
+  /// 배경 밝기에 맞는 상태바 스타일. AppBar 가 없는 화면은 `AnnotatedRegion` 으로 직접 건다.
+  static SystemUiOverlayStyle overlayStyleFor(Brightness bg) =>
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness:
+            bg == Brightness.dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: bg,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness:
+            bg == Brightness.dark ? Brightness.light : Brightness.dark,
+      );
 
   static ThemeData _build(DsColors c, Brightness brightness) {
     final TextTheme text = _textTheme(c);
@@ -55,6 +68,9 @@ abstract final class DsTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
+        // 상태바 아이콘은 테마를 따라야 한다. 예전엔 main 에서 light 로 고정해
+        // 라이트 모드에서 상태바 아이콘이 흰색으로 사라졌다.
+        systemOverlayStyle: overlayStyleFor(brightness),
         foregroundColor: c.textPrimary,
         titleTextStyle: DsType.heading.on(c.textPrimary),
         iconTheme: IconThemeData(color: c.textPrimary),

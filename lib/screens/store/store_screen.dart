@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -5,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
+import '../../domain/weighted_pick.dart';
+import '../../services/analytics_service.dart';
 import '../../models/store_item.dart';
 import '../../models/roulette_config.dart';
 import '../../models/raffle_room.dart';
@@ -265,6 +268,8 @@ class _StoreScreenState extends State<StoreScreen>
     context.read<AuthProvider>().loadUser();
 
     if (gifticonCode != null) {
+      unawaited(AnalyticsService.instance
+          .exchange(itemId: storeItemId, cost: cost));
       _showGifticonResultDialog(gifticonCode);
     } else {
       await _creditService.addCredits(
@@ -379,13 +384,15 @@ class _StoreScreenState extends State<StoreScreen>
   // 룰렛 탭
   // ───────────────────────────────────────────
 
+  /// 룰렛 항목 등급색. 단일 액센트 규칙에 맞춰 무채색→불꽃 명도 단계로만 구분한다.
+  /// (이전엔 파랑·초록·보라·금색 6종이 하드코딩돼 있었다)
   static const _rarityColors = [
-    Color(0xFF78909C),
-    Color(0xFF42A5F5),
-    Color(0xFF66BB6A),
-    Color(0xFFAB47BC),
-    Color(0xFFFF7043),
-    Color(0xFFFFD700),
+    AppTheme.rarityCommon,
+    AppTheme.textSecondary,
+    AppTheme.rarityRare,
+    AppTheme.rarityEpic,
+    AppTheme.rarityLegendary,
+    AppTheme.rarityLimited,
   ];
 
   static const double _slotItemExtent = 68.0;
@@ -796,29 +803,34 @@ class _StoreScreenState extends State<StoreScreen>
       return;
     }
 
-    // 하루 횟수 체크
-    final allowed = await _storeService.incrementRouletteSpins(
-        user.uid, config.dailySpinLimit);
-    if (!allowed) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('오늘 횟수를 모두 사용했습니다')),
-        );
-      }
-      return;
-    }
-
+    // 잔액 확인이 먼저다. 이전엔 횟수를 먼저 소모해서 크레딧 부족이면 횟수만 날아갔다.
     final success = await _creditService.spendCredits(
       userId: user.uid,
       amount: config.cost,
       description: '룰렛 사용',
     );
-
     if (!success) {
-      // 횟수를 썼지만 크레딧이 부족 → 횟수 환원은 복잡하므로 스낵바만
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('크레딧이 부족합니다')),
+        );
+      }
+      return;
+    }
+
+    // 하루 횟수 체크. 초과면 방금 차감한 크레딧을 돌려준다.
+    final allowed = await _storeService.incrementRouletteSpins(
+        user.uid, config.dailySpinLimit);
+    if (!allowed) {
+      await _creditService.addCredits(
+        userId: user.uid,
+        amount: config.cost,
+        description: '룰렛 일일 한도 초과 환불',
+      );
+      if (mounted) {
+        context.read<AuthProvider>().loadUser();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('오늘 횟수를 모두 사용했습니다')),
         );
       }
       return;
@@ -843,17 +855,14 @@ class _StoreScreenState extends State<StoreScreen>
     }
 
     final roll = Random().nextInt(totalWeight);
-    int cumulative = 0;
-    RoulettePrize? wonPrize;
-
-    for (final prize in eligiblePrizes) {
-      cumulative += prize.probability;
-      if (roll < cumulative) {
-        wonPrize = prize;
-        break;
-      }
-    }
-    wonPrize ??= eligiblePrizes.last;
+    final pickedIndex = pickWeightedIndex(
+      eligiblePrizes.map((p) => p.probability).toList(),
+      roll,
+    );
+    final RoulettePrize wonPrize =
+        eligiblePrizes[pickedIndex ?? eligiblePrizes.length - 1];
+    unawaited(AnalyticsService.instance
+        .rouletteSpin(cost: config.cost, prize: wonPrize.name));
 
     // 애니메이션용 인덱스는 전체 상품 목록에서 찾음
     final winnerIndex =
@@ -1392,6 +1401,8 @@ class _RaffleEntrySheetState extends State<_RaffleEntrySheet> {
           );
         }
 
+        unawaited(AnalyticsService.instance
+            .raffleEnter(roomId: widget.room.id, tickets: actualTickets));
         if (mounted) {
           Navigator.of(context).pop();
           widget.onSuccess(winnerId);

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/constants.dart';
@@ -791,7 +792,28 @@ class ProfileScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await context.read<AuthProvider>().deleteAccount();
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                await context.read<AuthProvider>().deleteAccount();
+              } on FirebaseAuthException catch (e) {
+                // Auth 삭제는 최근 로그인을 요구한다. 데이터는 아직 그대로다.
+                final msg = e.code == 'requires-recent-login'
+                    ? '보안을 위해 다시 로그인한 뒤 탈퇴해주세요.'
+                    : '탈퇴 처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
+                messenger.showSnackBar(SnackBar(content: Text(msg)));
+                if (e.code == 'requires-recent-login' && context.mounted) {
+                  await context.read<AuthProvider>().signOut();
+                  if (context.mounted) {
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil(AppRoutes.login, (r) => false);
+                  }
+                }
+                return;
+              } catch (_) {
+                messenger.showSnackBar(const SnackBar(
+                    content: Text('탈퇴 처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.')));
+                return;
+              }
               if (context.mounted) {
                 Navigator.of(context)
                     .pushNamedAndRemoveUntil(AppRoutes.login, (r) => false);

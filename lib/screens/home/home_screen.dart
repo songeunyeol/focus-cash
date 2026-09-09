@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/constants.dart';
 import '../../config/routes.dart';
 import '../../design/ds.dart';
+import '../../domain/session_recovery.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/focus_provider.dart';
+import '../../services/analytics_service.dart';
 import '../../services/focus_service.dart';
 import '../../services/xp_service.dart';
 import '../../widgets/common/common.dart';
@@ -35,8 +41,60 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final AuthProvider auth = context.read<AuthProvider>();
       await auth.loadUser();
       if (!mounted) return;
+      final bool recovering = await _tryRecoverSession(auth);
+      if (!mounted || recovering) return;
       _tryCheckIn(auth);
     });
+  }
+
+  /// 강제 종료로 남은 세션이 있으면 이어하기/완료/폐기를 판정한다.
+  /// 복구 화면으로 넘어가면 true 를 돌려 출석 체크 스낵바가 겹치지 않게 한다.
+  Future<bool> _tryRecoverSession(AuthProvider auth) async {
+    final PersistedSession? saved = await FocusProvider.readPersistedSession();
+    if (saved == null || !mounted) return false;
+    if (saved.userId != auth.user?.uid) {
+      await FocusProvider.discardPersistedSession();
+      return false;
+    }
+
+    final RecoveryAction action = decideRecovery(
+      startedAt: saved.startedAt,
+      targetMinutes: saved.targetMinutes,
+      now: DateTime.now(),
+    );
+    if (action == RecoveryAction.discard) {
+      await FocusProvider.discardPersistedSession();
+      return false;
+    }
+
+    final bool? go = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) => _RecoveryDialog(
+        session: saved,
+        action: action,
+      ),
+    );
+    if (!mounted) return false;
+
+    if (go != true) {
+      await FocusProvider.discardPersistedSession();
+      unawaited(AnalyticsService.instance.sessionRecovered('discard'));
+      return false;
+    }
+
+    context.read<FocusProvider>().resumeFromPersisted(saved);
+    unawaited(AnalyticsService.instance.sessionRecovered(action.name));
+    Navigator.of(context).pushNamed(
+      AppRoutes.focus,
+      arguments: <String, dynamic>{
+        'focusMinutes': saved.targetMinutes,
+        'hardcoreMode': saved.hardcoreMode,
+        'tag': saved.tag,
+        'watchAdOnStart': false,
+      },
+    );
+    return true;
   }
 
   @override
@@ -79,7 +137,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final DsColors c = context.ds;
 
-    return Scaffold(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: DsTheme.overlayStyleFor(Theme.of(context).brightness),
+      child: Scaffold(
       body: SafeArea(
         child: PageTransitionSwitcher(
           duration: Motion.standard,
@@ -132,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 label: '프로필'),
           ],
         ),
+      ),
       ),
     );
   }
@@ -431,6 +492,53 @@ class _WeekFactState extends State<_WeekFact> {
   @override
   Widget build(BuildContext context) =>
       _Fact(label: '이번 주', value: _minutes == null ? '—' : _hmKo(_minutes!));
+}
+
+/// 강제 종료된 세션 복구 안내.
+///
+/// 이어하기(목표 전)와 완료 처리(목표 후) 두 경우만 물어본다.
+/// 폐기 판정은 대화 없이 조용히 지운다 — 24시간 지난 세션을 놓고 고민시킬 이유가 없다.
+class _RecoveryDialog extends StatelessWidget {
+  const _RecoveryDialog({required this.session, required this.action});
+
+  final PersistedSession session;
+  final RecoveryAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    final DsColors c = context.ds;
+    final bool complete = action == RecoveryAction.complete;
+    final int elapsed = DateTime.now()
+        .difference(session.startedAt)
+        .inMinutes
+        .clamp(0, session.targetMinutes);
+
+    return AlertDialog(
+      backgroundColor: c.surfaceRaised,
+      shape: const RoundedRectangleBorder(borderRadius: R.rLg),
+      title: Text(
+        complete ? '끝내지 못한 집중이 있어요' : '진행 중이던 집중이 있어요',
+        style: DsType.heading.on(c.textPrimary),
+      ),
+      content: Text(
+        complete
+            ? '${_hmKo(session.targetMinutes)} 목표를 시간상 채웠어요. 완료로 기록하고 크레딧을 받을까요?'
+            : '${_hmKo(session.targetMinutes)} 목표 중 ${_hmKo(elapsed)}이 지났어요. 이어서 할까요?',
+        style: DsType.body.on(c.textSecondary),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text('버리기', style: DsType.bodyStrong.on(c.textTertiary)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(complete ? '완료 처리' : '이어하기',
+              style: DsType.bodyStrong.on(c.accentText)),
+        ),
+      ],
+    );
+  }
 }
 
 // ── 포맷터 ───────────────────────────────────────────────

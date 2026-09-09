@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../config/routes.dart';
+import '../../providers/auth_provider.dart';
 
 class FocusSetupScreen extends StatefulWidget {
   const FocusSetupScreen({super.key});
@@ -91,6 +93,11 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
     final expectedCredits =
         baseCredits + AppConstants.startAdBonus + endAdBonus;
     final expectedCreditsNoAd = baseCredits + endAdBonus;
+
+    // 약관상 일일 적립 한도. 오늘 이미 채웠으면 시작 전에 알려준다.
+    final todayCredits = context.watch<AuthProvider>().user?.todayCredits ?? 0;
+    final capRemaining =
+        (AppConstants.dailyCreditCap - todayCredits).clamp(0, AppConstants.dailyCreditCap);
 
     return Scaffold(
       appBar: AppBar(
@@ -333,6 +340,19 @@ class _FocusSetupScreenState extends State<FocusSetupScreen> {
                     AppTheme.of(context).textMuted,
                     isMain: false,
                   ),
+                  if (capRemaining < expectedCredits) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      capRemaining <= 0
+                          ? '오늘 적립 한도 ${AppConstants.dailyCreditCap}크레딧을 모두 채웠어요. 기록과 XP는 계속 쌓여요.'
+                          : '오늘 적립 한도까지 $capRemaining크레딧 남았어요.',
+                      style: TextStyle(
+                        color: AppTheme.of(context).textMuted,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

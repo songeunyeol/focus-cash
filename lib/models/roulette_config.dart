@@ -44,13 +44,14 @@ class RouletteConfig {
   static RouletteConfig get defaultConfig => const RouletteConfig(
         cost: 50,
         dailySpinLimit: 3,
+        // 기댓값 24.05 / 비용 50 (하우스엣지 약 52%). AppConstants.roulettePrizes 와 동일.
         prizes: [
-          RoulettePrize(name: '10 크레딧', credits: 10, probability: 40),
-          RoulettePrize(name: '50 크레딧', credits: 50, probability: 25),
-          RoulettePrize(name: '100 크레딧', credits: 100, probability: 15),
-          RoulettePrize(name: '200 크레딧', credits: 200, probability: 10),
-          RoulettePrize(name: '500 크레딧', credits: 500, probability: 7),
-          RoulettePrize(name: '1000 크레딧', credits: 1000, probability: 3),
+          RoulettePrize(name: '5 크레딧', credits: 5, probability: 55),
+          RoulettePrize(name: '10 크레딧', credits: 10, probability: 25),
+          RoulettePrize(name: '30 크레딧', credits: 30, probability: 10),
+          RoulettePrize(name: '80 크레딧', credits: 80, probability: 6),
+          RoulettePrize(name: '200 크레딧', credits: 200, probability: 3),
+          RoulettePrize(name: '500 크레딧', credits: 500, probability: 1),
         ],
       );
 }

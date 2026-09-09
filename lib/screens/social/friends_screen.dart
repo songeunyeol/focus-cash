@@ -35,8 +35,8 @@ void _toast(
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppTheme.of(context).textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -44,7 +44,7 @@ void _toast(
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF1E1E2E),
+        backgroundColor: AppTheme.of(context).elevated,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),

@@ -30,6 +30,13 @@ class UserModel {
   final int hardcoreSessionCount; // 하드코어 완료 횟수
   final int inviteCount;          // 초대 성공 횟수
 
+  /// 마지막 집중 **완료**일 'YYYY-MM-DD'. 스트릭 판정의 유일한 기준.
+  /// (lastActiveAt 은 룰렛·광고 보너스에도 갱신되므로 스트릭에 쓰면 안 된다)
+  final String lastFocusDate;
+
+  /// 첫 집중 완료 보너스(구 가입 보너스) 지급 여부
+  final bool firstFocusBonusGiven;
+
   const UserModel({
     required this.uid,
     required this.phoneNumber,
@@ -57,6 +64,8 @@ class UserModel {
     this.lastCheckInDate = '',
     this.hardcoreSessionCount = 0,
     this.inviteCount = 0,
+    this.lastFocusDate = '',
+    this.firstFocusBonusGiven = false,
   });
 
   UserModel copyWith({
@@ -86,6 +95,8 @@ class UserModel {
     String? lastCheckInDate,
     int? hardcoreSessionCount,
     int? inviteCount,
+    String? lastFocusDate,
+    bool? firstFocusBonusGiven,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -114,6 +125,8 @@ class UserModel {
       lastCheckInDate: lastCheckInDate ?? this.lastCheckInDate,
       hardcoreSessionCount: hardcoreSessionCount ?? this.hardcoreSessionCount,
       inviteCount: inviteCount ?? this.inviteCount,
+      lastFocusDate: lastFocusDate ?? this.lastFocusDate,
+      firstFocusBonusGiven: firstFocusBonusGiven ?? this.firstFocusBonusGiven,
     );
   }
 
@@ -145,6 +158,8 @@ class UserModel {
       'lastCheckInDate': lastCheckInDate,
       'hardcoreSessionCount': hardcoreSessionCount,
       'inviteCount': inviteCount,
+      'lastFocusDate': lastFocusDate,
+      'firstFocusBonusGiven': firstFocusBonusGiven,
     };
   }
 
@@ -187,6 +202,8 @@ class UserModel {
       lastCheckInDate: map['lastCheckInDate'] as String? ?? '',
       hardcoreSessionCount: map['hardcoreSessionCount'] as int? ?? 0,
       inviteCount: map['inviteCount'] as int? ?? 0,
+      lastFocusDate: map['lastFocusDate'] as String? ?? '',
+      firstFocusBonusGiven: map['firstFocusBonusGiven'] as bool? ?? false,
     );
   }
 }

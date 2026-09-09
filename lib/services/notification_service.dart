@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
@@ -14,12 +16,15 @@ class NotificationService {
     if (_initialized) return;
 
     tz.initializeTimeZones();
-    // 기기 시간대 자동 사용 (해외 사용자 대응)
-    final localTz = DateTime.now().timeZoneName;
+    // 기기 시간대 자동 사용 (해외 사용자 대응).
+    // `DateTime.now().timeZoneName` 은 'KST' 같은 약어를 돌려주고 tz DB 에 그 키가
+    // 없어서 항상 폴백(서울)으로 떨어�red. IANA 이름을 플랫폼에서 받아온다.
     try {
-      tz.setLocalLocation(tz.getLocation(localTz));
-    } catch (_) {
-      tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 폴백
+      final info = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(info.identifier));
+    } catch (e) {
+      debugPrint('[Notification] 시간대 조회 실패, Asia/Seoul 폴백: $e');
+      tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
     }
 
     const androidSettings =

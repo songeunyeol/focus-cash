@@ -2,13 +2,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdService {
-  // Google 공식 테스트 ID (실제 과금 없음)
-  // 출시 전: 아래 3개를 실제 AdMob ID로 교체
-  static const String _testInterstitialId =
+  // 실제 AdMob 광고 단위 ID (8차에 교체 완료). 이름에 test 가 남아 있어 헷갈렸다.
+  static const String _interstitialId =
       'ca-app-pub-9438563541930346/6418161812';
-  static const String _testRewardedId =
+  static const String _rewardedId =
       'ca-app-pub-9438563541930346/7606152804';
-  static const String testBannerId =
+  static const String bannerId =
       'ca-app-pub-9438563541930346/3328964046';
 
   InterstitialAd? _interstitialAd;
@@ -33,7 +32,7 @@ class AdService {
       return;
     }
     InterstitialAd.load(
-      adUnitId: _testInterstitialId,
+      adUnitId: _interstitialId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -80,7 +79,7 @@ class AdService {
       return;
     }
     RewardedAd.load(
-      adUnitId: _testRewardedId,
+      adUnitId: _rewardedId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {

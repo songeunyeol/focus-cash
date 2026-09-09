@@ -138,7 +138,7 @@ class _FocusScreenState extends State<FocusScreen>
 
     final away = DateTime.now().difference(pausedAt);
     if (away > const Duration(seconds: 30)) {
-      focusProvider.abandonSession();
+      focusProvider.abandonSession(reason: 'left_app');
     }
   }
 
@@ -157,6 +157,16 @@ class _FocusScreenState extends State<FocusScreen>
               }
             },
             // 중간에 닫으면 보너스 없음 (자동으로 다음 리워드 광고 재로드됨)
+          );
+        },
+        // 광고를 못 받아오면 사용자는 "+15 보너스"를 기대한 채 아무 안내도 못 받았다.
+        onAdFailed: () {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('광고를 불러오지 못해 보너스 없이 시작합니다'),
+              duration: Duration(seconds: 3),
+            ),
           );
         },
       );
@@ -179,6 +189,9 @@ class _FocusScreenState extends State<FocusScreen>
   void _startSession() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+
+      // 강제 종료 복구 경로: 홈이 이미 resumeFromPersisted() 로 세션을 살려놓았다.
+      if (context.read<FocusProvider>().state == FocusState.focusing) return;
 
       final user = context.read<AuthProvider>().user;
       if (user == null) {
@@ -497,6 +510,15 @@ class _FocusScreenState extends State<FocusScreen>
                     value: '+${provider.earnedCredits}',
                     color: AppTheme.creditGold,
                   ),
+                  if (provider.firstFocusBonus > 0) ...[
+                    Divider(color: AppTheme.of(context).surface, height: 24),
+                    _StatRow(
+                      icon: Icons.card_giftcard,
+                      label: '첫 집중 보너스',
+                      value: '+${provider.firstFocusBonus}',
+                      color: AppTheme.creditGold,
+                    ),
+                  ],
                   if (widget.tag.isNotEmpty) ...[
                     Divider(color: AppTheme.of(context).surface, height: 24),
                     _StatRow(
@@ -749,7 +771,7 @@ class _BannerAdWidgetState extends State<_BannerAdWidget> {
 
   void _loadAd() {
     _bannerAd = BannerAd(
-      adUnitId: AdService.testBannerId,
+      adUnitId: AdService.bannerId,
       size: widget.size,
       request: const AdRequest(),
       listener: BannerAdListener(

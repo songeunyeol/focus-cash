@@ -18,7 +18,14 @@ class AppConstants {
   static const int rouletteCost = 50;
   static const int rouletteDailyLimit = 3;
   static const int coffeeCouponCost = 6500;
-  static const int signupBonus = 200;
+
+  /// 이용약관 제4조 ② "일일 최대 적립 크레딧 250". 집중·광고 보너스에만 적용한다.
+  /// 약관과 코드가 다른 숫자를 보면 분쟁 시 약관이 이긴다 — 여기 하나만 고치면 둘이 같다.
+  static const int dailyCreditCap = 250;
+
+  /// 첫 집중 완료 보너스. (구 가입 보너스)
+  /// 가입 즉시 지급하면 탈퇴→재가입으로 무한 파밍된다. 10분이라도 집중을 완료해야 받는다.
+  static const int firstFocusBonus = 200;
   static const int referralBonus = 200;
 
   // Timer
@@ -29,14 +36,16 @@ class AppConstants {
   static const double hardcorePenaltyRate = 0.10;
   static const double hardcoreBonusRate = 1.2;
 
-  // Roulette prizes
+  // Roulette prizes (Firestore 설정이 없을 때의 폴백)
+  // 기댓값 24.05 / 비용 50. 폴백은 항상 운영자에게 유리해야 한다 —
+  // 이전 값(EV 116.5)은 설정 문서가 비어 있으면 곧바로 손해였다.
   static const List<Map<String, dynamic>> roulettePrizes = [
-    {'name': '10 크레딧', 'credits': 10, 'probability': 40},
-    {'name': '50 크레딧', 'credits': 50, 'probability': 25},
-    {'name': '100 크레딧', 'credits': 100, 'probability': 15},
-    {'name': '200 크레딧', 'credits': 200, 'probability': 10},
-    {'name': '500 크레딧', 'credits': 500, 'probability': 7},
-    {'name': '1000 크레딧', 'credits': 1000, 'probability': 3},
+    {'name': '5 크레딧', 'credits': 5, 'probability': 55},
+    {'name': '10 크레딧', 'credits': 10, 'probability': 25},
+    {'name': '30 크레딧', 'credits': 30, 'probability': 10},
+    {'name': '80 크레딧', 'credits': 80, 'probability': 6},
+    {'name': '200 크레딧', 'credits': 200, 'probability': 3},
+    {'name': '500 크레딧', 'credits': 500, 'probability': 1},
   ];
 
   // ── XP 경제 ────────────────────────────────

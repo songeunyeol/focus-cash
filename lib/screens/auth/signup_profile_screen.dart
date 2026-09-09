@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/constants.dart';
 import '../../config/theme.dart';
 import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
@@ -17,10 +18,9 @@ class _SignupProfileScreenState extends State<SignupProfileScreen> {
   int _selectedAvatar = 0;
   bool _isLoading = false;
 
-  // 아바타 목록 (이모지)
-  static const List<String> _avatars = [
-    '📚', '🎯', '💪', '🌟', '🚀', '🦊', '🐻', '🎮',
-  ];
+  // 앱 전역과 같은 목록이어야 한다. 별도 리스트를 쓰던 시절엔 가입 때 고른
+  // 아바타(📚)가 이후 화면에서 다른 동물(🦁)로 보였다.
+  static const List<String> _avatars = AppConstants.avatarEmojis;
 
   @override
   void dispose() {

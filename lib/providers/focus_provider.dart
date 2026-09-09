@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
+import '../domain/credit_rules.dart';
+import '../domain/session_recovery.dart';
 import '../models/focus_session.dart';
+import '../services/analytics_service.dart';
 import '../services/focus_service.dart';
 import '../services/credit_service.dart';
 import '../services/notification_service.dart';
@@ -11,8 +15,15 @@ import '../services/xp_service.dart';
 enum FocusState { idle, focusing, completed, abandoned }
 
 class FocusProvider extends ChangeNotifier {
-  final FocusService _focusService = FocusService();
-  final CreditService _creditService = CreditService();
+  FocusProvider({FocusService? focusService, CreditService? creditService})
+      : _focusService = focusService ?? FocusService(),
+        _creditService = creditService ?? CreditService();
+
+  final FocusService _focusService;
+  final CreditService _creditService;
+
+  /// 진행 중 세션의 로컬 저장 키. 프로세스가 죽어도 이것만 남는다.
+  static const String kActiveSessionKey = 'active_focus_session';
 
   FocusState _state = FocusState.idle;
   FocusSession? _currentSession;
@@ -37,19 +48,21 @@ class FocusProvider extends ChangeNotifier {
   /// 백그라운드 구간의 시간 공백은 정상이므로 시각 조작 판정에서 제외한다.
   bool _sawPauseSinceLastTick = false;
   int _earnedCredits = 0;
-  int _earnedXp = 0;
-  int _newLevel = 0;
-  List<String> _newBadges = [];
+  int _firstFocusBonus = 0;
+  SessionOutcome _outcome = SessionOutcome.empty;
 
   FocusState get state => _state;
-  int get earnedXp => _earnedXp;
-  int get newLevel => _newLevel;
-  List<String> get newBadges => List.unmodifiable(_newBadges);
+  int get earnedXp => _outcome.xpGained + _outcome.badgeXpGained;
+  int get newLevel => _outcome.leveledUp ? _outcome.newLevel : 0;
+  List<String> get newBadges => List.unmodifiable(_outcome.newBadges);
   FocusSession? get currentSession => _currentSession;
   int get remainingSeconds => _remainingSeconds;
   int get elapsedSeconds => _elapsedSeconds;
   int get elapsedMinutes => _elapsedSeconds ~/ 60;
   bool get clockTampered => _clockTampered;
+
+  /// 이번 완료로 받은 첫 집중 보너스 (0 이면 해당 없음)
+  int get firstFocusBonus => _firstFocusBonus;
 
   /// 앱이 백그라운드로 내려갔음을 알린다. 화면의 라이프사이클 훅에서 호출한다.
   void onAppPaused() => _sawPauseSinceLastTick = true;
@@ -66,13 +79,15 @@ class FocusProvider extends ChangeNotifier {
     bool watchedStartAd = false,
   }) async {
     try {
-      _currentSession = await _focusService.startSession(
-        userId: userId,
-        targetMinutes: targetMinutes,
-        hardcoreMode: hardcoreMode,
-        tag: tag,
-        watchedStartAd: watchedStartAd,
-      ).timeout(const Duration(seconds: 5));
+      _currentSession = await _focusService
+          .startSession(
+            userId: userId,
+            targetMinutes: targetMinutes,
+            hardcoreMode: hardcoreMode,
+            tag: tag,
+            watchedStartAd: watchedStartAd,
+          )
+          .timeout(const Duration(seconds: 5));
     } catch (e) {
       _currentSession = FocusSession(
         id: 'local-${DateTime.now().millisecondsSinceEpoch}',
@@ -85,15 +100,44 @@ class FocusProvider extends ChangeNotifier {
       );
     }
 
-    _remainingSeconds = targetMinutes * 60;
+    _beginTicking();
+    unawaited(_persistActiveSession());
+    unawaited(AnalyticsService.instance.sessionStart(
+      targetMinutes: targetMinutes,
+      mode: hardcoreMode,
+      withAd: watchedStartAd,
+    ));
+  }
+
+  /// 강제 종료 후 복구된 세션으로 재개한다. Firestore 문서는 이미 있으므로 새로 만들지 않는다.
+  /// 경과 시간이 목표를 넘겼으면 첫 틱에서 바로 완료 처리된다.
+  void resumeFromPersisted(PersistedSession p) {
+    _currentSession = FocusSession(
+      id: p.id,
+      userId: p.userId,
+      targetMinutes: p.targetMinutes,
+      hardcoreMode: p.hardcoreMode,
+      tag: p.tag,
+      startedAt: p.startedAt,
+    );
+    _beginTicking();
+    // 복귀 직후 첫 틱이 긴 공백을 시각 조작으로 오인하지 않게 한다.
+    _sawPauseSinceLastTick = true;
+  }
+
+  void _beginTicking() {
+    final session = _currentSession!;
+    _remainingSeconds = session.targetMinutes * 60;
     _elapsedSeconds = 0;
     _clockTampered = false;
+    _firstFocusBonus = 0;
+    _outcome = SessionOutcome.empty;
     _lastTickAt = DateTime.now();
     _monotonic
       ..reset()
       ..start();
     _state = FocusState.focusing;
-
+    syncElapsed();
     _startTimer();
     notifyListeners();
   }
@@ -169,80 +213,106 @@ class FocusProvider extends ChangeNotifier {
     _timer?.cancel();
     _monotonic.stop();
 
-    if (_currentSession == null) return;
+    final session = _currentSession;
+    if (session == null) return;
 
     // 기기 시각이 조작된 정황이 있으면 크레딧을 지급하지 않고 무효 처리한다.
     if (_clockTampered) {
       _isCompleting = false;
-      await abandonSession(nopenalty: true);
+      await abandonSession(nopenalty: true, reason: 'clock_tampered');
       return;
     }
 
     final actualMinutes = _elapsedSeconds ~/ 60;
-
-    final credits = _creditService.calculateSessionCredits(
+    final credits = CreditRules.sessionCredits(
       focusMinutes: actualMinutes,
-      watchedStartAd: _currentSession!.watchedStartAd,
-      watchedEndAd: false,
-      hardcoreMode: _currentSession!.hardcoreMode,
+      hardcoreMode: session.hardcoreMode,
+      watchedStartAd: session.watchedStartAd,
     );
 
-    _earnedCredits = credits;
-
     try {
-      _currentSession = await _focusService.endSession(
-        session: _currentSession!,
-        actualMinutes: actualMinutes,
-        creditsEarned: credits,
-        completed: true,
-      ).timeout(const Duration(seconds: 5));
-      await _creditService.addCredits(
-        userId: _currentSession!.userId,
-        amount: credits,
-        description: '$actualMinutes분 집중 완료',
-      ).timeout(const Duration(seconds: 5));
+      final (updated, outcome) = await _focusService
+          .endSession(
+            session: session,
+            actualMinutes: actualMinutes,
+            creditsEarned: credits,
+            completed: true,
+          )
+          .timeout(const Duration(seconds: 8));
+      _currentSession = updated;
+      _outcome = outcome;
+
+      // 약관상 일일 한도(250)는 집중 크레딧에 적용된다. 실제 지급량이 표시값이다.
+      _earnedCredits = await _creditService
+          .addCredits(
+            userId: session.userId,
+            amount: credits,
+            description: '$actualMinutes분 집중 완료',
+            dailyCap: AppConstants.dailyCreditCap,
+          )
+          .timeout(const Duration(seconds: 5));
+
+      if (outcome.isFirstEverSession) {
+        _firstFocusBonus = await _maybeGiveFirstFocusBonus(session.userId);
+      }
     } catch (e) {
-      // Firebase 미설정 시 무시
+      debugPrint('세션 정산 실패: $e');
+      _earnedCredits = 0;
     }
 
-    // XP 먼저 계산 — 완료 화면에 XP/배지/레벨업 정보가 준비된 뒤 UI 업데이트
-    await _awardXp(_currentSession!.userId, _currentSession!);
-
-    final completedUserId = _currentSession!.userId;
+    final completedUserId = session.userId;
     _state = FocusState.completed;
     notifyListeners();
 
+    await _clearPersistedSession();
+
     // 백그라운드 작업 (UI 불필요) — reset() 후 null 참조 방지
     _maybeGiveReferralBonus(completedUserId);
-    _updateNotifications(completedUserId, credits);
+    _updateNotifications(completedUserId, _earnedCredits, actualMinutes);
+    unawaited(AnalyticsService.instance.sessionComplete(
+      actualMinutes: actualMinutes,
+      credits: _earnedCredits,
+      mode: session.hardcoreMode,
+    ));
   }
 
-  Future<void> _awardXp(String userId, FocusSession session) async {
+  /// 첫 집중 완료 보너스 (구 가입 보너스). 플래그를 먼저 세워 중복 지급을 막는다.
+  Future<int> _maybeGiveFirstFocusBonus(String userId) async {
     try {
-      final result = await XpService.instance.onSessionComplete(
+      final ref = FirebaseFirestore.instance.collection('users').doc(userId);
+      final granted = await FirebaseFirestore.instance.runTransaction<bool>((tx) async {
+        final snap = await tx.get(ref);
+        if (!snap.exists) return false;
+        if (snap.data()?['firstFocusBonusGiven'] == true) return false;
+        tx.update(ref, {'firstFocusBonusGiven': true});
+        return true;
+      });
+      if (!granted) return 0;
+      return await _creditService.addCredits(
         userId: userId,
-        actualMinutes: session.actualMinutes,
-        isHardcore: session.hardcoreMode == 'hardcore',
-        startedAt: session.startedAt,
+        amount: AppConstants.firstFocusBonus,
+        description: '첫 집중 완료 보너스',
       );
-      if (result.isNotEmpty) {
-        _earnedXp = (result['xpGained'] as int? ?? 0) +
-            (result['badgeXpGained'] as int? ?? 0);
-        _newLevel = result['newLevel'] as int? ?? 0;
-        _newBadges = (result['newBadges'] as List<dynamic>?)?.cast<String>() ?? [];
-        // notifyListeners는 _completeSession에서 일괄 호출
-      }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('첫 집중 보너스 지급 실패: $e');
+      return 0;
+    }
   }
 
-  Future<void> _updateNotifications(String userId, int credits) async {
+  Future<void> _updateNotifications(
+      String userId, int credits, int minutes) async {
     try {
-      final db = FirebaseFirestore.instance;
-      final userDoc = await db.collection('users').doc(userId).get();
-      final streak = userDoc.data()?['currentStreak'] as int? ?? 0;
+      final streak = _outcome.currentStreak;
       // 오늘 집중 완료 → 오늘 밤 알림 취소 후 내일 밤으로 재스케줄 (Duolingo 스타일)
       await NotificationService.instance
           .rescheduleStreakReminderToTomorrow(currentStreak: streak);
+
+      // 화면이 꺼져 있거나 다른 앱에 있는 채로 끝났으면 알림으로 알려준다.
+      final lifecycle = WidgetsBinding.instance.lifecycleState;
+      if (lifecycle != null && lifecycle != AppLifecycleState.resumed) {
+        await NotificationService.instance
+            .showFocusCompleted(minutes: minutes, credits: credits);
+      }
     } catch (_) {}
   }
 
@@ -261,63 +331,72 @@ class FocusProvider extends ChangeNotifier {
       // 보너스 지급 플래그 먼저 설정 (중복 방지)
       await db.collection('users').doc(userId).update({'inviteBonusGiven': true});
 
-      // 피초대자 보너스
       await _creditService.addCredits(
         userId: userId,
         amount: AppConstants.referralBonus,
         description: '친구 초대 보너스',
       );
-
-      // 초대자 보너스
       await _creditService.addCredits(
         userId: invitedBy,
         amount: AppConstants.referralBonus,
         description: '친구 초대 보너스 (초대 성공)',
       );
+      // 초대자 inviteCount + invite_3 배지. 이전에는 호출처가 없어 배지가 영원히 안 나왔다.
+      await XpService.instance.onInviteSuccess(invitedBy);
     } catch (_) {}
   }
 
   Future<void> addStartAdBonus() async {
-    if (_currentSession == null) return;
+    final session = _currentSession;
+    if (session == null) return;
 
+    int granted = AppConstants.startAdBonus;
     try {
-      await _creditService.addCredits(
-        userId: _currentSession!.userId,
+      granted = await _creditService.addCredits(
+        userId: session.userId,
         amount: AppConstants.startAdBonus,
         description: '시작 광고 시청 보너스',
+        dailyCap: AppConstants.dailyCreditCap,
       );
     } catch (e) {
-      // Firebase 미설정 시 무시
+      debugPrint('시작 광고 보너스 실패: $e');
     }
 
-    _earnedCredits += AppConstants.startAdBonus;
+    _earnedCredits += granted;
     notifyListeners();
   }
 
   Future<void> addEndAdBonus() async {
-    if (_currentSession == null) return;
+    final session = _currentSession;
+    if (session == null) return;
 
-    final bonus = (_earnedCredits * AppConstants.endAdMultiplierRate).round();
+    final bonus = CreditRules.endAdBonus(_earnedCredits);
     if (bonus <= 0) return;
 
+    int granted = bonus;
     try {
-      await _creditService.addCredits(
-        userId: _currentSession!.userId,
+      granted = await _creditService.addCredits(
+        userId: session.userId,
         amount: bonus,
         description: '종료 광고 시청 보너스',
+        dailyCap: AppConstants.dailyCreditCap,
       );
     } catch (e) {
-      // Firebase 미설정 시 무시
+      debugPrint('종료 광고 보너스 실패: $e');
     }
 
-    _earnedCredits += bonus;
+    _earnedCredits += granted;
     notifyListeners();
   }
 
-  Future<void> abandonSession({bool nopenalty = false}) async {
+  Future<void> abandonSession({
+    bool nopenalty = false,
+    String reason = 'user',
+  }) async {
     _timer?.cancel();
 
-    if (_currentSession == null) return;
+    final session = _currentSession;
+    if (session == null) return;
 
     final actualMinutes = _elapsedSeconds ~/ 60;
 
@@ -325,24 +404,83 @@ class FocusProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentSession = await _focusService.endSession(
-        session: _currentSession!,
-        actualMinutes: actualMinutes,
-        creditsEarned: 0,
-        completed: false,
-      ).timeout(const Duration(seconds: 5));
+      final (updated, _) = await _focusService
+          .endSession(
+            session: session,
+            actualMinutes: actualMinutes,
+            creditsEarned: 0,
+            completed: false,
+          )
+          .timeout(const Duration(seconds: 5));
+      _currentSession = updated;
 
-      if (!nopenalty && _currentSession!.hardcoreMode == 'hardcore') {
-        await _creditService.applyPenalty(
-          userId: _currentSession!.userId,
-          penaltyRate: AppConstants.hardcorePenaltyRate,
-        ).timeout(const Duration(seconds: 5));
+      if (!nopenalty && session.hardcoreMode == 'hardcore') {
+        await _creditService
+            .applyPenalty(
+              userId: session.userId,
+              penaltyRate: AppConstants.hardcorePenaltyRate,
+            )
+            .timeout(const Duration(seconds: 5));
       }
     } catch (e) {
-      // Firebase 미설정 시 무시
+      debugPrint('세션 포기 기록 실패: $e');
     }
 
     _earnedCredits = 0;
+    await _clearPersistedSession();
+    unawaited(AnalyticsService.instance.sessionAbandon(
+      elapsedMinutes: actualMinutes,
+      mode: session.hardcoreMode,
+      reason: reason,
+    ));
+  }
+
+  // ── 로컬 영속화 ─────────────────────────────────────────
+
+  Future<void> _persistActiveSession() async {
+    final s = _currentSession;
+    if (s == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        kActiveSessionKey,
+        PersistedSession(
+          id: s.id,
+          userId: s.userId,
+          startedAt: s.startedAt,
+          targetMinutes: s.targetMinutes,
+          hardcoreMode: s.hardcoreMode,
+          tag: s.tag,
+        ).encode(),
+      );
+    } catch (e) {
+      debugPrint('세션 저장 실패: $e');
+    }
+  }
+
+  Future<void> _clearPersistedSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(kActiveSessionKey);
+    } catch (_) {}
+  }
+
+  /// 앱 시작 시 남아 있는 세션을 읽는다. 없거나 깨졌으면 null.
+  static Future<PersistedSession?> readPersistedSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return PersistedSession.tryParse(prefs.getString(kActiveSessionKey));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 복구를 포기할 때. Firestore 문서는 cleanupOrphanedSessions 가 정리한다.
+  static Future<void> discardPersistedSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(kActiveSessionKey);
+    } catch (_) {}
   }
 
   void reset() {
@@ -359,9 +497,8 @@ class FocusProvider extends ChangeNotifier {
       ..stop()
       ..reset();
     _earnedCredits = 0;
-    _earnedXp = 0;
-    _newLevel = 0;
-    _newBadges = [];
+    _firstFocusBonus = 0;
+    _outcome = SessionOutcome.empty;
     notifyListeners();
   }
 

@@ -3,11 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' hide User;
 import '../models/user_model.dart';
-import '../config/constants.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
+      : _injectedAuth = auth,
+        _injectedDb = firestore;
+
+  final FirebaseAuth? _injectedAuth;
+  final FirebaseFirestore? _injectedDb;
+  late final FirebaseAuth _auth = _injectedAuth ?? FirebaseAuth.instance;
+  late final FirebaseFirestore _firestore =
+      _injectedDb ?? FirebaseFirestore.instance;
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -105,12 +111,14 @@ class AuthService {
       }
     }
 
+    // 가입 보너스는 여기서 주지 않는다. 탈퇴→재가입으로 무한 파밍되던 구멍이라
+    // 첫 집중 완료 시점(FocusProvider)에 [AppConstants.firstFocusBonus] 로 지급한다.
     final userModel = UserModel(
       uid: user.uid,
       phoneNumber: user.phoneNumber ?? '',
       displayName: displayName,
       avatarIndex: avatarIndex,
-      totalCredits: AppConstants.signupBonus,
+      totalCredits: 0,
       termsAgreedAt: now,
       marketingAgreed: marketingAgreed,
       createdAt: now,
@@ -123,14 +131,6 @@ class AuthService {
         .collection('users')
         .doc(user.uid)
         .set(userModel.toMap());
-
-    await _firestore.collection('credit_transactions').add({
-      'userId': user.uid,
-      'amount': AppConstants.signupBonus,
-      'type': 'earn',
-      'description': '가입 보너스',
-      'createdAt': now.toIso8601String(),
-    });
   }
 
   Future<void> updateUserProfile({
@@ -162,51 +162,63 @@ class AuthService {
     await _auth.signOut();
   }
 
+  /// 계정 탈퇴.
+  ///
+  /// 순서가 중요하다. Auth 계정 삭제는 `requires-recent-login` 으로 거부될 수 있으므로
+  /// **먼저** 시도한다. 데이터를 지운 뒤 Auth 삭제가 실패하면 "users 문서는 없는데 계정은 남은"
+  /// 상태가 되고, 다음 로그인이 신규 가입으로 처리된다. 삭제된 사용자의 ID 토큰은 만료 전까지
+  /// 유효하므로 뒤따르는 Firestore 정리는 통과한다.
+  ///
+  /// 개인정보는 남기지 않는다 — 특히 gifticon_codes 의 배송지·연락처와 user_notes.
   Future<void> deleteAccount() async {
     final user = currentUser;
     if (user == null) return;
-
     final uid = user.uid;
 
-    // focus_sessions 삭제
-    final sessions = await _firestore
-        .collection('focus_sessions')
-        .where('userId', isEqualTo: uid)
-        .get();
-    for (final doc in sessions.docs) {
-      await doc.reference.delete();
-    }
-
-    // credit_transactions 삭제
-    final transactions = await _firestore
-        .collection('credit_transactions')
-        .where('userId', isEqualTo: uid)
-        .get();
-    for (final doc in transactions.docs) {
-      await doc.reference.delete();
-    }
-
-    // friend_requests 삭제 (내가 보냈거나 받은 것 모두)
-    final sentRequests = await _firestore
-        .collection('friend_requests')
-        .where('from', isEqualTo: uid)
-        .get();
-    for (final doc in sentRequests.docs) {
-      await doc.reference.delete();
-    }
-    final receivedRequests = await _firestore
-        .collection('friend_requests')
-        .where('to', isEqualTo: uid)
-        .get();
-    for (final doc in receivedRequests.docs) {
-      await doc.reference.delete();
-    }
-
-    // users 문서 삭제
-    await _firestore.collection('users').doc(uid).delete();
-
-    // Firebase Auth 계정 삭제
     await GoogleSignIn().signOut();
-    await user.delete();
+    await user.delete(); // requires-recent-login 이면 여기서 throw → 데이터는 그대로
+
+    Future<void> deleteWhere(String collection, String field) async {
+      final snap = await _firestore
+          .collection(collection)
+          .where(field, isEqualTo: uid)
+          .get();
+      await _deleteAll(snap.docs);
+    }
+
+    await deleteWhere('focus_sessions', 'userId');
+    await deleteWhere('credit_transactions', 'userId');
+    await deleteWhere('user_notes', 'userId');
+    await deleteWhere('raffle_entries', 'userId');
+    await deleteWhere('friend_requests', 'from');
+    await deleteWhere('friend_requests', 'to');
+
+    // 기프티콘 문서는 재고·정산 기록이므로 남기되, 개인정보 필드만 비운다.
+    final gifticons = await _firestore
+        .collection('gifticon_codes')
+        .where('usedBy', isEqualTo: uid)
+        .get();
+    final scrub = _firestore.batch();
+    for (final doc in gifticons.docs) {
+      scrub.update(doc.reference, {
+        'deliveryName': '',
+        'deliveryPhone': '',
+        'deliveryAddress': '',
+      });
+    }
+    await scrub.commit();
+
+    await _firestore.collection('users').doc(uid).delete();
+  }
+
+  /// Firestore 배치는 500건 제한이 있어 나눠서 지운다.
+  Future<void> _deleteAll(List<QueryDocumentSnapshot> docs) async {
+    for (var i = 0; i < docs.length; i += 400) {
+      final batch = _firestore.batch();
+      for (final doc in docs.skip(i).take(400)) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
   }
 }

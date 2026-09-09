@@ -142,7 +142,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              '가입 보너스',
+                              '첫 집중 완료 보너스',
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 13,
@@ -150,7 +150,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '+${AppConstants.signupBonus} 크레딧',
+                              '+${AppConstants.firstFocusBonus} 크레딧',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 24,
@@ -158,7 +158,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen>
                               ),
                             ),
                             const Text(
-                              '지금 바로 사용 가능!',
+                              '첫 집중을 완료하면 바로 지급돼요',
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,

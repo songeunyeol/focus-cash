@@ -42,12 +42,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
+  // 상태바 아이콘 밝기는 여기서 고정하지 않는다. DsTheme.appBarTheme 과
+  // AppBar 없는 화면의 AnnotatedRegion 이 테마별로 결정한다.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   runApp(const FocusCashApp());
 }
