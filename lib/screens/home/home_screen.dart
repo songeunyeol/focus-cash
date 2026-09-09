@@ -5,18 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/constants.dart';
 import '../../config/routes.dart';
 import '../../design/ds.dart';
 import '../../domain/session_recovery.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/focus_provider.dart';
+import '../../providers/goal_provider.dart';
 import '../../services/analytics_service.dart';
 import '../../services/focus_service.dart';
 import '../../services/xp_service.dart';
 import '../../widgets/common/common.dart';
 import '../profile/profile_screen.dart';
 import '../ranking/ranking_screen.dart';
+import '../records/records_screen.dart';
 import '../store/store_screen.dart';
 
 /// 하단 네비게이션 셸.
@@ -219,7 +220,8 @@ class _HomePage extends StatelessWidget {
     final user = auth.user;
 
     final int todayMinutes = user?.todayFocusMinutes ?? 0;
-    const int goal = AppConstants.dailyGoalMinutes;
+    // 하루 목표는 기록 > 통계 탭에서 바꾼다 (기기 로컬 저장).
+    final int goal = context.watch<GoalProvider>().dailyGoalMinutes;
     final double progress = goal == 0 ? 0 : todayMinutes / goal;
     final bool notStarted = todayMinutes <= 0;
 
@@ -422,8 +424,7 @@ class _Footer extends StatelessWidget {
           _Fact(label: '스트릭', value: '$streak일'),
           _WeekFact(userId: userId),
           DsPressable(
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutes.focusCalendar),
+            onTap: () => AppRoutes.openRecords(context, RecordsTab.stats),
             child: Text('기록 →', style: DsType.caption.on(c.textTertiary)),
           ),
         ],

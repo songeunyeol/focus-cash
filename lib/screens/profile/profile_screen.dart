@@ -8,12 +8,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/level_frame.dart';
 import '../auth/signup_terms_screen.dart';
+import '../records/records_screen.dart';
 import '../social/friends_screen.dart';
-import 'focus_stats_screen.dart';
-import 'credit_history_screen.dart';
 import 'my_gifticons_screen.dart';
-import 'achievements_screen.dart';
-import 'focus_calendar_screen.dart';
 import 'notification_settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -433,22 +430,17 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildSettingsSection(BuildContext context) {
     final quickItems = [
       {
+        'icon': Icons.insights_rounded,
+        'title': '기록',
+        'color': AppTheme.primaryColor,
+        'onTap': () => AppRoutes.openRecords(context, RecordsTab.stats),
+      },
+      {
         'icon': Icons.emoji_events_rounded,
         'title': '업적',
         'color': AppTheme.creditGold,
-        'onTap': () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AchievementsScreen()),
-            ),
-      },
-      {
-        'icon': Icons.calendar_month_rounded,
-        'title': '집중 캘린더',
-        'color': AppTheme.primaryColor,
-        'onTap': () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FocusCalendarScreen()),
-            ),
+        'onTap': () =>
+            AppRoutes.openRecords(context, RecordsTab.achievements),
       },
       {
         'icon': Icons.people_rounded,
@@ -474,18 +466,12 @@ class ProfileScreen extends StatelessWidget {
       {
         'icon': Icons.history_rounded,
         'title': '크레딧 내역',
-        'onTap': () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CreditHistoryScreen()),
-            ),
+        'onTap': () => AppRoutes.openRecords(context, RecordsTab.credits),
       },
       {
-        'icon': Icons.bar_chart_rounded,
-        'title': '집중 통계',
-        'onTap': () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FocusStatsScreen()),
-            ),
+        'icon': Icons.calendar_month_rounded,
+        'title': '집중 캘린더',
+        'onTap': () => AppRoutes.openRecords(context, RecordsTab.calendar),
       },
       {
         'icon': Icons.notifications_outlined,

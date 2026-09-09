@@ -391,6 +391,45 @@ class FocusService {
     return dailyMinutes;
   }
 
+  /// 한 달치 날짜별 집중 분 (`yyyy-MM-dd` → 분). 완료된 세션만. 캘린더 탭이 쓴다.
+  /// (인덱스: userId + completed + startedAt — firestore.indexes.json)
+  Future<Map<String, int>> getMonthlyMinutes(
+      String userId, DateTime month) async {
+    final start = DateTime(month.year, month.month, 1);
+    final end = DateTime(month.year, month.month + 1, 1);
+    final snap = await _firestore
+        .collection('focus_sessions')
+        .where('userId', isEqualTo: userId)
+        .where('completed', isEqualTo: true)
+        .where('startedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('startedAt', isLessThan: Timestamp.fromDate(end))
+        .get();
+
+    final result = <String, int>{};
+    for (final doc in snap.docs) {
+      final s = FocusSession.fromMap(doc.data());
+      final key = _dateKey(s.startedAt);
+      result[key] = (result[key] ?? 0) + s.actualMinutes;
+    }
+    return result;
+  }
+
+  /// 특정 날짜의 완료 세션 목록 (시작 시각 순).
+  Future<List<FocusSession>> getSessionsOnDay(
+      String userId, DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
+    final end = start.add(const Duration(days: 1));
+    final snap = await _firestore
+        .collection('focus_sessions')
+        .where('userId', isEqualTo: userId)
+        .where('completed', isEqualTo: true)
+        .where('startedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('startedAt', isLessThan: Timestamp.fromDate(end))
+        .orderBy('startedAt')
+        .get();
+    return snap.docs.map((d) => FocusSession.fromMap(d.data())).toList();
+  }
+
   static String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

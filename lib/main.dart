@@ -10,6 +10,7 @@ import 'config/theme.dart';
 import 'config/routes.dart';
 import 'providers/auth_provider.dart';
 import 'providers/focus_provider.dart';
+import 'providers/goal_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/common/update_required_screen.dart';
 import 'services/ad_service.dart';
@@ -61,6 +62,7 @@ class FocusCashApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FocusProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => GoalProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(

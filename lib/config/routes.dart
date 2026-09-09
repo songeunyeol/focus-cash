@@ -12,8 +12,7 @@ import '../screens/focus/focus_setup_screen.dart';
 import '../screens/store/store_screen.dart';
 import '../screens/ranking/ranking_screen.dart';
 import '../screens/profile/profile_screen.dart';
-import '../screens/profile/achievements_screen.dart';
-import '../screens/profile/focus_calendar_screen.dart';
+import '../screens/records/records_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -29,8 +28,17 @@ class AppRoutes {
   static const String store = '/store';
   static const String ranking = '/ranking';
   static const String profile = '/profile';
+
+  /// 기록 (통계·캘린더·크레딧·업적). 인자 `{'tab': RecordsTab}` 로 초기 탭을 고른다.
+  static const String records = '/records';
+
+  /// 구 라우트 이름. 기록 화면의 해당 탭으로 연결된다.
   static const String achievements = '/achievements';
   static const String focusCalendar = '/focus-calendar';
+
+  /// 기록 화면을 특정 탭으로 연다.
+  static Future<void> openRecords(BuildContext context, RecordsTab tab) =>
+      Navigator.of(context).pushNamed(records, arguments: {'tab': tab});
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -78,12 +86,21 @@ class AppRoutes {
       case profile:
         return sharedAxisRoute(
             page: const ProfileScreen(), settings: settings);
+      case records:
+        final args = settings.arguments;
+        final tab = args is Map && args['tab'] is RecordsTab
+            ? args['tab'] as RecordsTab
+            : RecordsTab.stats;
+        return sharedAxisRoute(
+            page: RecordsScreen(initialTab: tab), settings: settings);
       case achievements:
         return sharedAxisRoute(
-            page: const AchievementsScreen(), settings: settings);
+            page: const RecordsScreen(initialTab: RecordsTab.achievements),
+            settings: settings);
       case focusCalendar:
         return sharedAxisRoute(
-            page: const FocusCalendarScreen(), settings: settings);
+            page: const RecordsScreen(initialTab: RecordsTab.calendar),
+            settings: settings);
       default:
         return fadeThroughRoute(page: const HomeScreen(), settings: settings);
     }
